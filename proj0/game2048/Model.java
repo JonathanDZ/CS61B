@@ -106,6 +106,29 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+    public static int checkStepsItCanMove(int[] array, int i){
+        int steps = 0;
+        if(i <= 0){
+            return 0;
+        }
+        for (i -= 1;i >= 0;i -= 1){
+            if(array[i] == 0){
+                steps += 1;
+            }else{
+                break;
+            }
+        }
+        return steps;
+    }
+    public static boolean checkIfItCanMerge(int[] array, int i){
+        if (i <= 0){
+            return false;
+        }
+        if (array[i-1] == array[i]){
+            return true;
+        }
+        return false;
+    }
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
@@ -113,6 +136,73 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        /**
+         * Split the board according to the direction(side)
+         * switch use move&merge method to get updated location of last tile
+         * actually move the tiles and add up scores
+         * set changed to true
+         */
+        this.board.setViewingPerspective(side);
+
+        int board_size = this.board.size();
+        int[] column_array,new_pos ;
+        int merge_flag = -1;
+        for (int i = 0; i < board_size; i += 1){
+            column_array = new int[board_size];
+            new_pos = new int[board_size];
+            merge_flag = -1;
+            for (int j = 0; j < board_size; j += 1){
+                // turn the elements of a column into an array
+                if(this.board.tile(i,j) != null){
+                    column_array[board_size - j -1] = this.board.tile(i,j).value();
+                }else{
+                    column_array[board_size - j -1] = 0;
+                }
+            }
+            for (int j = 0; j < board_size; j += 1){
+                if(column_array[j] == 0){
+                    new_pos[j] = -1;
+                    continue;
+                }
+                new_pos[j] = j;
+                // check how many 0's before jth element, then move it backward that many of steps
+                int steps = Model.checkStepsItCanMove(column_array,j);
+                if(steps > 0){
+                    // move this element to new position
+                    column_array[j - steps] = column_array[j];
+                    column_array[j] = 0;
+                    // update its new position
+                    new_pos[j] = j - steps;
+                    // set changed flag to true
+                    changed = true;
+                }
+                // then check if it can be merged into the tiles before it
+                if ( (Model.checkIfItCanMerge(column_array,new_pos[j]) == true)
+                        && (new_pos[j]-1 > merge_flag) ){
+                    // merge the element to the element before it
+                    column_array[new_pos[j]-1] = column_array[new_pos[j]-1] * 2;
+                    column_array[new_pos[j]] = 0;
+                    // update its new position, and update merge flag
+                    // (to make sure new tile won't merge with merged tiles)
+                    new_pos[j] = new_pos[j] - 1;
+                    merge_flag = new_pos[j];
+                    // add up some new scores when merge happens
+                    this.score += column_array[new_pos[j]];
+                    // set changed flag to true
+                    changed = true;
+                }
+            }
+            // after all new positions have been found, use move method to move the tiles
+            Tile t;
+            for (int j = 0; j < board_size; j += 1){
+                if ( (new_pos[j] != j) && (new_pos[j] >= 0)){
+                    t = this.board.tile(i,board_size-j-1);
+                    this.board.move(i,board_size-new_pos[j]-1,t);
+                }
+            }
+        }
+
+        this.board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -138,6 +228,14 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int board_size = b.size();
+        for (int i = 0; i < board_size; i += 1 ){
+            for (int j = 0; j < board_size; j += 1){
+                if(b.tile(i,j) == null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +246,17 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int board_size = b.size();
+        for (int i = 0; i < board_size; i += 1 ){
+            for (int j = 0; j < board_size; j += 1){
+                if(b.tile(i,j) == null){
+                    continue;
+                }
+                if(b.tile(i,j).value() == MAX_PIECE){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -157,8 +266,47 @@ public class Model extends Observable {
      * 1. There is at least one empty space on the board.
      * 2. There are two adjacent tiles with the same value.
      */
+    public static boolean adjacentTilesIsSame(Board b, int i, int j){
+        /**
+         * To find a specific tile(column i, row j) has same value with its adjacent tiles
+         */
+        int board_size = b.size();
+        if(i != 0){
+            if(b.tile(i-1,j).value() == b.tile(i,j).value()){
+                return true;
+            }
+        }
+        if (i != board_size-1){
+            if(b.tile(i+1,j).value() == b.tile(i,j).value()){
+                return true;
+            }
+        }
+        if(j != 0){
+            if(b.tile(i,j-1).value() == b.tile(i,j).value()){
+                return true;
+            }
+        }
+        if (j != board_size-1){
+            if(b.tile(i,j+1).value() == b.tile(i,j).value()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        if (Model.emptySpaceExists(b) == true){
+            return true;
+        }
+        int board_size = b.size();
+        for (int i = 0; i < board_size; i += 1 ){
+            for (int j = 0; j < board_size; j += 1){
+                if(Model.adjacentTilesIsSame(b,i,j) == true){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
