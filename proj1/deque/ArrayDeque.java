@@ -16,6 +16,7 @@ class ArrayDeque<AnyType>{
         public static int ArraySize = 8;
         // To define where to store first element
         public static int beginPoint = 3;
+        public int size;
 
         public ArrayNode(ArrayNode prev, ArrayNode next){
             this.AnyTypeArray = (AnyType[]) new Object[ArraySize];
@@ -23,6 +24,7 @@ class ArrayDeque<AnyType>{
             this.next = next;
             this.first = beginPoint;
             this.last = beginPoint + 1;
+            this.size = 0;
         }
 
         /**
@@ -31,7 +33,7 @@ class ArrayDeque<AnyType>{
          * if the array is full, return -1 (an array only holds 7 elements)
          */
         public int arrayAddLast(AnyType item){
-            if (first == last){
+            if (size == ArraySize){
                 return -1;
             }
             AnyTypeArray[last] = item;
@@ -39,11 +41,13 @@ class ArrayDeque<AnyType>{
             if (last == ArraySize){
                 return 0;
             }
+            // add one item
+            size += 1;
             return last;
         }
 
         public int arrayAddFirst(AnyType item){
-            if (first == last){
+            if (size == ArraySize){
                 return -1;
             }
             AnyTypeArray[first] = item;
@@ -51,6 +55,8 @@ class ArrayDeque<AnyType>{
             if (first == -1){
                 return ArraySize - 1;
             }
+            // add one item
+            size += 1;
             return first;
         }
 
@@ -62,21 +68,29 @@ class ArrayDeque<AnyType>{
          * be aware to check if it's the first node or not!!
          */
         public boolean arrayIsEmpty(){
-            if (first == last + 1){
-                return true;
-            }
-            if (first == ArraySize - 1 && last == 0){
+            if (size == 0){
                 return true;
             }
             return false;
         }
 
         public void printArray(){
+//            int index = first + 1;
+//            if (index == ArraySize){
+//                index = 0;
+//            }
+//            while (index != last){
+//                System.out.print(" --> " + AnyTypeArray[index]);
+//                index += 1;
+//                if (index == ArraySize){
+//                    index = 0;
+//                }
+//            }
             int index = first + 1;
             if (index == ArraySize){
                 index = 0;
             }
-            while (index != last){
+            for (int i = size; i > 0; i -= 1){
                 System.out.print(" --> " + AnyTypeArray[index]);
                 index += 1;
                 if (index == ArraySize){
@@ -99,6 +113,8 @@ class ArrayDeque<AnyType>{
             }
             AnyType firstItem = AnyTypeArray[index];
             first = index;
+            // remove one item
+            size -= 1;
             return firstItem;
         }
 
@@ -112,6 +128,8 @@ class ArrayDeque<AnyType>{
             }
             AnyType lastItem = AnyTypeArray[index];
             last = index;
+            // remove one item
+            size -= 1;
             return lastItem;
         }
 
@@ -121,7 +139,7 @@ class ArrayDeque<AnyType>{
         public AnyType arrayGet(int index){
             index = first + index + 1;
             int lastIndex;
-            if (last <= first){
+            if (last <= first || size == ArraySize){
                 lastIndex = last + ArraySize;
             }else {
                 lastIndex = last;
@@ -139,13 +157,26 @@ class ArrayDeque<AnyType>{
          * Use to find two arrayNodes are equal or not.
          */
         public boolean equals(ArrayNode objectArrayNode){
-            if (this.first == objectArrayNode.first &&
-                    this.last == objectArrayNode.last){
+            if (this.size == objectArrayNode.size){
+//                int index = first + 1;
+//                if (index == ArraySize){
+//                    index = 0;
+//                }
+//                while (index != last){
+//                    if (this.AnyTypeArray[index] !=
+//                            objectArrayNode.AnyTypeArray[index]){
+//                        return false;
+//                    }
+//                    index += 1;
+//                    if (index == ArraySize){
+//                        index = 0;
+//                    }
+//                }
                 int index = first + 1;
                 if (index == ArraySize){
                     index = 0;
                 }
-                while (index != last){
+                for (int i = size; i > 0; i -= 1){
                     if (this.AnyTypeArray[index] !=
                             objectArrayNode.AnyTypeArray[index]){
                         return false;
