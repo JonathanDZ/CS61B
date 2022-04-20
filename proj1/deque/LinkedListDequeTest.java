@@ -34,6 +34,24 @@ public class LinkedListDequeTest {
 		System.out.println("Printing out deque: ");
 		lld1.printDeque();
 
+        ArrayDeque<String> ad1 = new ArrayDeque<>();
+
+        assertTrue("A newly initialized ADeque should be empty", ad1.isEmpty());
+        ad1.addFirst("front");
+
+        // The && operator is the same as "and" in Python.
+        // It's a binary operator that returns true if both arguments true, and false otherwise.
+        assertEquals(1, ad1.size());
+        assertFalse("ad1 should now contain 1 item", ad1.isEmpty());
+
+        ad1.addLast("middle");
+        assertEquals(2, ad1.size());
+
+        ad1.addLast("back");
+        assertEquals(3, ad1.size());
+
+        System.out.println("Printing out deque: ");
+        ad1.printDeque();
     }
 
     @Test
@@ -60,15 +78,30 @@ public class LinkedListDequeTest {
     public void removeEmptyTest() {
 
 
-        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
-        lld1.addFirst(3);
+//        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+//        lld1.addFirst(3);
+//
+//        lld1.removeLast();
+//        lld1.removeFirst();
+//        lld1.removeLast();
+//        lld1.removeFirst();
+//
+//        int size = lld1.size();
+//        String errorMsg = "  Bad size returned when removing from empty deque.\n";
+//        errorMsg += "  student size() returned " + size + "\n";
+//        errorMsg += "  actual size() returned 0\n";
+//
+//        assertEquals(errorMsg, 0, size);
 
-        lld1.removeLast();
-        lld1.removeFirst();
-        lld1.removeLast();
-        lld1.removeFirst();
+        ArrayDeque<Integer> ad1 = new ArrayDeque<>();
+        ad1.addFirst(3);
 
-        int size = lld1.size();
+        ad1.removeLast();
+        ad1.removeFirst();
+        ad1.removeLast();
+        ad1.removeFirst();
+
+        int size = ad1.size();
         String errorMsg = "  Bad size returned when removing from empty deque.\n";
         errorMsg += "  student size() returned " + size + "\n";
         errorMsg += "  actual size() returned 0\n";
@@ -82,17 +115,29 @@ public class LinkedListDequeTest {
     public void multipleParamTest() {
 
 
-        LinkedListDeque<String>  lld1 = new LinkedListDeque<String>();
-        LinkedListDeque<Double>  lld2 = new LinkedListDeque<Double>();
-        LinkedListDeque<Boolean> lld3 = new LinkedListDeque<Boolean>();
+//        LinkedListDeque<String>  lld1 = new LinkedListDeque<String>();
+//        LinkedListDeque<Double>  lld2 = new LinkedListDeque<Double>();
+//        LinkedListDeque<Boolean> lld3 = new LinkedListDeque<Boolean>();
+//
+//        lld1.addFirst("string");
+//        lld2.addFirst(3.14159);
+//        lld3.addFirst(true);
+//
+//        String s = lld1.removeFirst();
+//        double d = lld2.removeFirst();
+//        boolean b = lld3.removeFirst();
 
-        lld1.addFirst("string");
-        lld2.addFirst(3.14159);
-        lld3.addFirst(true);
+        ArrayDeque<String>  ad1 = new ArrayDeque<>();
+        ArrayDeque<Double>  ad2 = new ArrayDeque<>();
+        ArrayDeque<Boolean> ad3 = new ArrayDeque<>();
 
-        String s = lld1.removeFirst();
-        double d = lld2.removeFirst();
-        boolean b = lld3.removeFirst();
+        ad1.addFirst("string");
+        ad2.addFirst(3.14159);
+        ad3.addFirst(true);
+
+        String s = ad1.removeFirst();
+        double d = ad2.removeFirst();
+        boolean b = ad3.removeFirst();
 
     }
 

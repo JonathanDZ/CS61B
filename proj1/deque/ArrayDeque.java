@@ -27,6 +27,9 @@ public class ArrayDeque<item>{
         item[] a = (item[]) new Object[capacity];
         item[] temp = (item[]) new Object[size];
         int index = first + 1;
+        if (index == length){
+            index = 0;
+        }
         for (int i = 0; i < size; i += 1){
             temp[i] = items[index];
             index += 1;
@@ -35,6 +38,7 @@ public class ArrayDeque<item>{
             }
         }
         System.arraycopy(temp, 0, a, 0, size);
+        items = a;
         length = capacity;
         first = length - 1;
         last = size;
@@ -104,7 +108,7 @@ public class ArrayDeque<item>{
         // remove one item
         size -= 1;
         double usageRatio = (double) size/length;
-        if ( usageRatio < miniRatio){
+        if (usageRatio < miniRatio && length > initialSize){
             resize(length / 2);
         }
         return firstItem;
@@ -124,7 +128,7 @@ public class ArrayDeque<item>{
         // remove one item
         size -= 1;
         double usageRatio = (double) size/length;
-        if ( usageRatio < miniRatio){
+        if (usageRatio < miniRatio && length > initialSize){
             resize(length / 2);
         }
         return lastItem;
@@ -132,6 +136,9 @@ public class ArrayDeque<item>{
 
     public item get(int index){
         index = first + index + 1;
+        if (first == length - 1){
+            index = index - length;
+        }
         int lastIndex;
         if (last <= first || size == length){
             lastIndex = last + length;
