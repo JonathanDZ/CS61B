@@ -1,239 +1,72 @@
 package deque;
 
-class ArrayDeque<AnyType>{
+public class ArrayDeque<item>{
+    private item[] items;
     private int size;
-    private ArrayNode sentinel;
-
-    private class ArrayNode{
-        public AnyType[] AnyTypeArray;
-        public ArrayNode prev;
-        public ArrayNode next;
-        // To indicate the position of the first/last element
-        // Changes When add first or add last
-        public int first;
-        public int last;
-        // To define how big the array is
-        public static int ArraySize = 8;
-        // To define where to store first element
-        public static int beginPoint = 3;
-        public int size;
-
-        public ArrayNode(ArrayNode prev, ArrayNode next){
-            this.AnyTypeArray = (AnyType[]) new Object[ArraySize];
-            this.prev = prev;
-            this.next = next;
-            this.first = beginPoint;
-            this.last = beginPoint + 1;
-            this.size = 0;
-        }
-
-        /**
-         * Helper method: add an element to this array,
-         * if it added successfully, return the index of the element,
-         * if the array is full, return -1 (an array only holds 7 elements)
-         */
-        public int arrayAddLast(AnyType item){
-            if (size == ArraySize){
-                return -1;
-            }
-            AnyTypeArray[last] = item;
-            last += 1;
-            if (last == ArraySize){
-                return 0;
-            }
-            // add one item
-            size += 1;
-            return last;
-        }
-
-        public int arrayAddFirst(AnyType item){
-            if (size == ArraySize){
-                return -1;
-            }
-            AnyTypeArray[first] = item;
-            first -= 1;
-            if (first == -1){
-                return ArraySize - 1;
-            }
-            // add one item
-            size += 1;
-            return first;
-        }
-
-        /**
-         * Return true if this array is empty, don't care about other arrayNode.
-         * Can be used in remove array function,
-         * to check if the array is empty or not;
-         * When used in isEmpty function,
-         * be aware to check if it's the first node or not!!
-         */
-        public boolean arrayIsEmpty(){
-            if (size == 0){
-                return true;
-            }
-            return false;
-        }
-
-        public void printArray(){
-//            int index = first + 1;
-//            if (index == ArraySize){
-//                index = 0;
-//            }
-//            while (index != last){
-//                System.out.print(" --> " + AnyTypeArray[index]);
-//                index += 1;
-//                if (index == ArraySize){
-//                    index = 0;
-//                }
-//            }
-            int index = first + 1;
-            if (index == ArraySize){
-                index = 0;
-            }
-            for (int i = size; i > 0; i -= 1){
-                System.out.print(" --> " + AnyTypeArray[index]);
-                index += 1;
-                if (index == ArraySize){
-                    index = 0;
-                }
-            }
-        }
-
-        /**
-         * Remove the first/last element of array, and return it.
-         * If array is empty, return null.
-         */
-        public AnyType arrayRemoveFirst(){
-            if (this.arrayIsEmpty() == true){
-                return null;
-            }
-            int index = first + 1;
-            if (index == ArraySize){
-                index = 0;
-            }
-            AnyType firstItem = AnyTypeArray[index];
-            first = index;
-            // remove one item
-            size -= 1;
-            return firstItem;
-        }
-
-        public AnyType arrayRemoveLast(){
-            if (this.arrayIsEmpty() == true){
-                return null;
-            }
-            int index = last - 1;
-            if (index == -1){
-                index = ArraySize - 1;
-            }
-            AnyType lastItem = AnyTypeArray[index];
-            last = index;
-            // remove one item
-            size -= 1;
-            return lastItem;
-        }
-
-        /**
-         * Get an element in array, if the index is invalid, return null;
-         */
-        public AnyType arrayGet(int index){
-            index = first + index + 1;
-            int lastIndex;
-            if (last <= first || size == ArraySize){
-                lastIndex = last + ArraySize;
-            }else {
-                lastIndex = last;
-            }
-            if (index >= lastIndex){
-                return null;
-            }
-            if (index >= ArraySize){
-                index = index - ArraySize;
-            }
-            return AnyTypeArray[index];
-        }
-
-        /**
-         * Use to find two arrayNodes are equal or not.
-         */
-        public boolean equals(ArrayNode objectArrayNode){
-            if (this.size == objectArrayNode.size){
-//                int index = first + 1;
-//                if (index == ArraySize){
-//                    index = 0;
-//                }
-//                while (index != last){
-//                    if (this.AnyTypeArray[index] !=
-//                            objectArrayNode.AnyTypeArray[index]){
-//                        return false;
-//                    }
-//                    index += 1;
-//                    if (index == ArraySize){
-//                        index = 0;
-//                    }
-//                }
-                int index = first + 1;
-                if (index == ArraySize){
-                    index = 0;
-                }
-                for (int i = size; i > 0; i -= 1){
-                    if (this.AnyTypeArray[index] !=
-                            objectArrayNode.AnyTypeArray[index]){
-                        return false;
-                    }
-                    index += 1;
-                    if (index == ArraySize){
-                        index = 0;
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-    }
+    private int first;
+    private int last;
+    private int length;
+    public static int initialSize = 8;
+    public static int beginPoint = 3;
+    public static double miniRatio = 0.25;
 
     public ArrayDeque(){
-        this.sentinel = new ArrayNode(null, null);
-        this.sentinel.prev = sentinel;
-        this.sentinel.next = sentinel;
-        this.size = 0;
+        items = (item[]) new Object[initialSize];
+        first = beginPoint;
+        last = beginPoint + 1;
+        length = initialSize;
+        size = 0;
     }
 
-    public void addFirst(AnyType item){
-        int index = sentinel.arrayAddFirst(item);
-        // Add item to first array
-        // If array is full, then create a new arrayNode before first arrayNode,
-        // and point sentinel to this new arrayNode.
-        // Then add the item into the new arrayNode.
-        if (index < 0){
-            sentinel = new ArrayNode(sentinel.prev, sentinel);
-            sentinel.next.prev = sentinel;
-            sentinel.prev.next = sentinel;
-            sentinel.arrayAddFirst(item);
+    /**
+     * Helper methods:
+     * to correctly upsize and downsize the array.
+     * Upsize/Downsize: put everything in order, then put them into new array
+     */
+    private void resize(int capacity){
+        item[] a = (item[]) new Object[capacity];
+        item[] temp = (item[]) new Object[size];
+        int index = first + 1;
+        for (int i = 0; i < size; i += 1){
+            temp[i] = items[index];
+            index += 1;
+            if (index == length){
+                index = 0;
+            }
         }
-        // add one item
+        System.arraycopy(temp, 0, a, 0, size);
+        length = capacity;
+        first = length - 1;
+        last = size;
+    }
+
+    public void addFirst(item item){
+        if (size == length){
+            resize(2 * length);
+        }
+        items[first] = item;
+        first -= 1;
+        if (first < 0){
+            first = length - 1;
+        }
         size += 1;
     }
 
-    public void addLast(AnyType item){
-        int index = sentinel.prev.arrayAddLast(item);
-        // Add item to last array
-        // If array is full, then create a new arrayNode after last arrayNode,
-        // Then add the item into the new arrayNode.
-        if (index < 0){
-            sentinel.prev = new ArrayNode(sentinel.prev, sentinel);
-            sentinel.prev.prev.next = sentinel.prev;
-            sentinel.prev.arrayAddLast(item);
+    public void addLast(item item){
+        if (size == length){
+            resize(2 * length);
         }
-        // add one item
+        items[last] = item;
+        last += 1;
+        if (last == length){
+            last = 0;
+        }
         size += 1;
     }
 
     public boolean isEmpty(){
-        if (sentinel.next == sentinel){
-            if (sentinel.arrayIsEmpty() == true){
-                return true;
-            }
+        if (size == 0){
+            return true;
         }
         return false;
     }
@@ -244,78 +77,88 @@ class ArrayDeque<AnyType>{
 
     public void printDeque(){
         System.out.print("sentinel");
-        sentinel.printArray();
-        ArrayNode pointer = sentinel.next;
-        while (pointer != sentinel){
-            pointer.printArray();
-            pointer = pointer.next;
+        int index = first + 1;
+        if (index == length){
+            index = 0;
+        }
+        for (int i = size; i > 0; i -= 1){
+            System.out.print(" --> " + items[index]);
+            index += 1;
+            if (index == length){
+                index = 0;
+            }
         }
     }
 
-    public AnyType removeFirst(){
-        if (this.isEmpty() == true){
+    public item removeFirst(){
+        if (isEmpty() == true){
             return null;
         }
-        AnyType firstItem = sentinel.arrayRemoveFirst();
-        // check if this arrayNode is empty, if it is, remove it.
-        if (sentinel.arrayIsEmpty() == true){
-            sentinel.prev.next = sentinel.next;
-            sentinel.next.prev = sentinel.prev;
-            sentinel = sentinel.next;
+        int index = first + 1;
+        if (index == length){
+            index = 0;
         }
+        item firstItem = items[index];
+        items[index] = null;
+        first = index;
         // remove one item
         size -= 1;
+        double usageRatio = (double) size/length;
+        if ( usageRatio < miniRatio){
+            resize(length / 2);
+        }
         return firstItem;
     }
 
-    public AnyType removeLast(){
-        if (this.isEmpty() == true){
+    public item removeLast(){
+        if (isEmpty() == true){
             return null;
         }
-        AnyType lastItem = sentinel.prev.arrayRemoveLast();
-        // check if this arrayNode is empty, if it is, remove it.
-        if (sentinel.prev.arrayIsEmpty() == true){
-            sentinel.prev.prev.next = sentinel;
-            sentinel.prev = sentinel.prev.prev;
+        int index = last - 1;
+        if (index < 0){
+            index = length - 1;
         }
+        item lastItem = items[index];
+        items[index] = null;
+        last = index;
         // remove one item
         size -= 1;
+        double usageRatio = (double) size/length;
+        if ( usageRatio < miniRatio){
+            resize(length / 2);
+        }
         return lastItem;
     }
 
-    public AnyType get(int index){
-        if (index < size){
-            ArrayNode pointer = sentinel;
-            while (index >= ArrayNode.ArraySize){
-                pointer = pointer.next;
-                index -= ArrayNode.ArraySize;
-            }
-            return pointer.arrayGet(index);
+    public item get(int index){
+        index = first + index + 1;
+        int lastIndex;
+        if (last <= first || size == length){
+            lastIndex = last + length;
+        }else {
+            lastIndex = last;
         }
-        return null;
+        if (index >= lastIndex){
+            return null;
+        }
+        if (index >= length){
+            index = index - length;
+        }
+        return items[index];
     }
-
-    /**
-     * I don't know what is iterator, maybe I should come back and write this
-     * after I learn the concept of iterator in Lecture 11.
-     */
-//    public Iterator<AnyType> iterator(){
-//        return null;
-//    }
 
     public boolean equals(Object o){
         if (o instanceof ArrayDeque<?>){
-            ArrayNode thisPointer = this.sentinel;
-            ArrayDeque<?>.ArrayNode oPointer = ((ArrayDeque<?>) o).sentinel;
-            if (thisPointer.equals(oPointer) == true){
-                thisPointer = thisPointer.next;
-                oPointer = oPointer.next;
-                while (thisPointer != sentinel){
-                    if (thisPointer.equals(oPointer) == false){
+            if (this.size == ((ArrayDeque<?>) o).size){
+                int index = first + 1;
+                for (int i = 0; i < size; i += 1){
+                    if (this.items[index] != ((ArrayDeque<?>) o).items[index]){
                         return false;
                     }
-                    thisPointer = thisPointer.next;
-                    oPointer = oPointer.next;
+                    index += 1;
+                    if (index == length){
+                        index = 0;
+                    }
                 }
                 return true;
             }
