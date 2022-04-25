@@ -2,7 +2,7 @@ package deque;
 
 import java.util.Iterator;
 
-public class ArrayDeque<item> implements Iterable<item>{
+public class ArrayDeque<item> implements Iterable<item>, Deque<item>{
     private item[] items;
     private int size;
     private int first;
@@ -46,6 +46,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         last = size;
     }
 
+    @Override
     public void addFirst(item item){
         if (size == length){
             resize(2 * length);
@@ -58,6 +59,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         size += 1;
     }
 
+    @Override
     public void addLast(item item){
         if (size == length){
             resize(2 * length);
@@ -70,17 +72,20 @@ public class ArrayDeque<item> implements Iterable<item>{
         size += 1;
     }
 
-    public boolean isEmpty(){
-        if (size == 0){
-            return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean isEmpty(){
+//        if (size == 0){
+//            return true;
+//        }
+//        return false;
+//    }
 
+    @Override
     public int size(){
         return size;
     }
 
+    @Override
     public void printDeque(){
         System.out.print("sentinel");
         int index = first + 1;
@@ -97,6 +102,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         System.out.println("");
     }
 
+    @Override
     public item removeFirst(){
         if (isEmpty() == true){
             return null;
@@ -117,6 +123,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         return firstItem;
     }
 
+    @Override
     public item removeLast(){
         if (isEmpty() == true){
             return null;
@@ -137,6 +144,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         return lastItem;
     }
 
+    @Override
     public item get(int index){
         index = first + index + 1;
         if (first == length - 1){
@@ -157,6 +165,7 @@ public class ArrayDeque<item> implements Iterable<item>{
         return items[index];
     }
 
+    @Override
     public Iterator<item> iterator(){
         return new arrayDequeIterator();
     }

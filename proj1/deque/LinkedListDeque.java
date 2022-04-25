@@ -2,7 +2,7 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
+public class LinkedListDeque<AnyType> implements Iterable<AnyType>, Deque<AnyType> {
     private int size;
     private DENode sentinel;
 
@@ -25,12 +25,14 @@ public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
         this.size = 0;
     }
 
+    @Override
     public void addFirst(AnyType item){
         sentinel.next = new DENode(sentinel, item, sentinel.next);
         sentinel.next.next.prev = sentinel.next;
         this.size += 1;
     }
 
+    @Override
     public void addLast(AnyType item){
         DENode last = sentinel.prev;
         last.next = new DENode(sentinel.prev, item, sentinel);
@@ -38,21 +40,24 @@ public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
         this.size += 1;
     }
 
-    public boolean isEmpty(){
-        if (sentinel.next == sentinel){
-            return true;
-        }else{
-            return false;
-        }
-    }
+//    @Override
+//    public boolean isEmpty(){
+//        if (sentinel.next == sentinel){
+//            return true;
+//        }else{
+//            return false;
+//        }
+//    }
 
     /**
      * Remember to add size changes in add/remove functions
      */
+    @Override
     public int size(){
         return size;
     }
 
+    @Override
     public void printDeque(){
         System.out.print("sentinel");
         DENode pointer = sentinel.next;
@@ -63,6 +68,7 @@ public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
         System.out.println("");
     }
 
+    @Override
     public AnyType removeFirst(){
         if (sentinel.next == sentinel){
             return null;
@@ -75,6 +81,7 @@ public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
         return firstItem;
     }
 
+    @Override
     public AnyType removeLast(){
         if (sentinel.prev == sentinel){
             return null;
@@ -87,6 +94,7 @@ public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
         return lastItem;
     }
 
+    @Override
     public AnyType get(int index){
         DENode pointer = sentinel;
         while(pointer.next != sentinel){
