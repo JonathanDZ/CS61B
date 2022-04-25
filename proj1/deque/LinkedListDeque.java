@@ -1,6 +1,8 @@
 package deque;
 
-public class LinkedListDeque<AnyType> {
+import java.util.Iterator;
+
+public class LinkedListDeque<AnyType> implements Iterable<AnyType> {
     private int size;
     private DENode sentinel;
 
@@ -117,9 +119,30 @@ public class LinkedListDeque<AnyType> {
      * I don't know what is iterator, maybe I should come back and write this
      * after I learn the concept of iterator in Lecture 11.
      */
-//    public Iterator<AnyType> iterator(){
-//        return null;
-//    }
+    @Override
+    public Iterator<AnyType> iterator(){
+        return new LLDequeIterator();
+    }
+
+    private class LLDequeIterator implements Iterator<AnyType>{
+        private DENode pointer;
+
+        public LLDequeIterator(){
+            this.pointer = sentinel.next;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return pointer != sentinel;
+        }
+
+        @Override
+        public AnyType next(){
+            AnyType returnItem = pointer.item;
+            pointer = pointer.next;
+            return returnItem;
+        }
+    }
 
     public boolean equals(Object o){
         if (o instanceof LinkedListDeque<?>){

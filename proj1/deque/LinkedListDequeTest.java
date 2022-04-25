@@ -34,6 +34,10 @@ public class LinkedListDequeTest {
 		System.out.println("Printing out deque: ");
 		lld1.printDeque();
 
+        for (String i: lld1){
+            System.out.println(i);
+        }
+
         ArrayDeque<String> ad1 = new ArrayDeque<>();
 
         assertTrue("A newly initialized ADeque should be empty", ad1.isEmpty());
@@ -52,6 +56,10 @@ public class LinkedListDequeTest {
 
         System.out.println("Printing out deque: ");
         ad1.printDeque();
+
+        for (String i: ad1){
+            System.out.println(i);
+        }
     }
 
     @Test
@@ -162,17 +170,22 @@ public class LinkedListDequeTest {
     public void bigLLDequeTest() {
 
 
-        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
-        for (int i = 0; i < 1000000; i++) {
+//        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
+        ArrayDeque<Integer> lld1 = new ArrayDeque<>();
+        for (int i = 0; i < 100; i++) {
             lld1.addLast(i);
         }
 
-        for (double i = 0; i < 500000; i++) {
+        for (double i = 0; i < 80; i++) {
             assertEquals("Should have the same value", i, (double) lld1.removeFirst(), 0.0);
         }
 
-        for (double i = 999999; i > 500000; i--) {
-            assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
+//        for (double i = 0; i < 5; i++) {
+//            assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
+//        }
+
+        for (int i: lld1){
+            System.out.println(i);
         }
 
     }

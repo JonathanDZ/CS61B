@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<item>{
+import java.util.Iterator;
+
+public class ArrayDeque<item> implements Iterable<item>{
     private item[] items;
     private int size;
     private int first;
@@ -92,6 +94,7 @@ public class ArrayDeque<item>{
                 index = 0;
             }
         }
+        System.out.println("");
     }
 
     public item removeFirst(){
@@ -152,6 +155,44 @@ public class ArrayDeque<item>{
             index = index - length;
         }
         return items[index];
+    }
+
+    public Iterator<item> iterator(){
+        return new arrayDequeIterator();
+    }
+
+    private class arrayDequeIterator implements Iterator<item>{
+        private int index;
+        private int lastPos;
+
+        public arrayDequeIterator(){
+            index = first + 1;
+            if (index == length){
+                index = 0;
+            }
+            if (first >= last || size == length){
+                lastPos = last + length;
+            }else{
+                lastPos = last;
+            }
+        }
+
+        @Override
+        public boolean hasNext(){
+            return index < lastPos;
+        }
+
+        @Override
+        public item next(){
+            item returnItem;
+            if (index >= length){
+                returnItem = items[index - length];
+            }else{
+                returnItem = items[index];
+            }
+            index += 1;
+            return returnItem;
+        }
     }
 
     public boolean equals(Object o){
