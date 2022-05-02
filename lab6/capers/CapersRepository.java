@@ -1,6 +1,8 @@
 package capers;
 
 import java.io.File;
+import java.io.IOException;
+
 import static capers.Utils.*;
 
 /** A repository for Capers 
@@ -18,8 +20,7 @@ public class CapersRepository {
     static final File CWD = new File(System.getProperty("user.dir"));
 
     /** Main metadata folder. */
-    static final File CAPERS_FOLDER = null; // TODO Hint: look at the `join`
-                                            //      function in Utils
+    static final File CAPERS_FOLDER = join(CWD,".capers"); // TODO Hint: look at the `join` function in Utils
 
     /**
      * Does required filesystem operations to allow for persistence.
@@ -32,6 +33,22 @@ public class CapersRepository {
      */
     public static void setupPersistence() {
         // TODO
+        if (CAPERS_FOLDER.exists() == false){
+            CAPERS_FOLDER.mkdir();
+        }
+        File dogsFolder = join(CAPERS_FOLDER, "dogs");
+        if (dogsFolder.exists() == false){
+            dogsFolder.mkdir();
+        }
+        File storyFile = join(CAPERS_FOLDER, "story");
+//        File storyFile = new File(CAPERS_FOLDER.toString() + "story");
+        if (storyFile.exists() == false){
+            try{
+                storyFile.createNewFile();
+            } catch (IOException excp){
+                throw error("Can't create story file.");
+            }
+        }
     }
 
     /**
@@ -41,6 +58,14 @@ public class CapersRepository {
      */
     public static void writeStory(String text) {
         // TODO
+        File story = join(CAPERS_FOLDER, "story");
+        if (story.exists() == true){
+            text = readContentsAsString(story) + text + "\n";
+            writeContents(story, text);
+            System.out.print(text);
+        }else {
+            throw error("Can't write into story file, because it's not exist");
+        }
     }
 
     /**
