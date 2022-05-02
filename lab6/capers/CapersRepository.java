@@ -60,7 +60,10 @@ public class CapersRepository {
         // TODO
         File story = join(CAPERS_FOLDER, "story");
         if (story.exists() == true){
-            text = readContentsAsString(story) + text + "\n";
+            String originalText = readContentsAsString(story);
+            if (!originalText.isEmpty()) {
+                text = originalText + "\n" + text;
+            }
             writeContents(story, text);
             System.out.print(text);
         }else {

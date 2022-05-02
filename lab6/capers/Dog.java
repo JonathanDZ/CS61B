@@ -6,7 +6,7 @@ import java.io.Serializable;
 import static capers.Utils.*;
 
 /** Represents a dog that can be serialized.
- * @author TODO
+ * @author Jonathan TODO
 */
 public class Dog implements Serializable { // TODO
 
@@ -51,7 +51,7 @@ public class Dog implements Serializable { // TODO
     public void haveBirthday() {
         age += 1;
         System.out.println(toString());
-        System.out.println("Happy birthday! Woof! Woof!");
+        System.out.print("Happy birthday! Woof! Woof!");
     }
 
     /**
@@ -60,7 +60,7 @@ public class Dog implements Serializable { // TODO
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
         File dogFile = join(DOG_FOLDER, this.name);
-        if (dogFile.exists() == true){
+        if (dogFile.exists() == true) {
             writeObject(dogFile, this);
         }else {
             try {
