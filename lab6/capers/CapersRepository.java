@@ -43,7 +43,7 @@ public class CapersRepository {
         File storyFile = join(CAPERS_FOLDER, "story");
 //        File storyFile = new File(CAPERS_FOLDER.toString() + "story");
         if (storyFile.exists() == false){
-            try{
+            try {
                 storyFile.createNewFile();
             } catch (IOException excp){
                 throw error("Can't create story file.");
@@ -75,6 +75,13 @@ public class CapersRepository {
      */
     public static void makeDog(String name, String breed, int age) {
         // TODO
+        File dogFile = join(CAPERS_FOLDER, "dogs", name);
+        if (dogFile.exists() == true) {
+            throw error("This dog is already exist");
+        }
+        Dog d = new Dog(name, breed, age);
+        d.saveDog();
+        System.out.print(d.toString());
     }
 
     /**
@@ -85,5 +92,9 @@ public class CapersRepository {
      */
     public static void celebrateBirthday(String name) {
         // TODO
+//        File dogFile = join(CAPERS_FOLDER, "dogs", name);
+        Dog d = Dog.fromFile(name);
+        d.haveBirthday();
+        d.saveDog();
     }
 }
