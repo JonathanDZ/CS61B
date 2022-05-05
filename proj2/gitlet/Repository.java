@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import static gitlet.Utils.*;
+import gitlet.StatusLog;
 
 // TODO: any imports you need here
 
@@ -25,5 +26,35 @@ public class Repository {
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
+    public static final File StatusArea = join(GITLET_DIR, "StatusArea");
+    public static final File Commits = join(GITLET_DIR, "Commits");
+    public static final File Blobs = join(GITLET_DIR, "Blobs");
+
+
     /* TODO: fill in the rest of this class. */
+    public static void init() {
+        if (GITLET_DIR.exists() == true) {
+            Utils.error("A Gitlet version-control system already exists " +
+                    "in the current directory.");
+            return;
+        }
+        // make directories
+        setupPersistence();
+        // generate initial commit
+        Commit initialCommit = new Commit("initial commit", null);
+        initialCommit.saveCommit();
+        // setup pointers
+        StatusLog statusLog = new StatusLog();
+        statusLog.setPointer("master", sha1(initialCommit));
+        statusLog.setPointer("HEAD", sha1(initialCommit));
+        statusLog.saveStatus();
+    }
+
+    private static void setupPersistence() {
+        GITLET_DIR.mkdir();
+        StatusArea.mkdir();
+        Commits.mkdir();
+        Blobs.mkdir();
+    }
+
 }

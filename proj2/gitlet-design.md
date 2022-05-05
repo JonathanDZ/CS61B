@@ -21,10 +21,11 @@ Which method should write in repository class? And which method should write in 
 ```text
 CWD                             <==== Whatever the current working directory is.
 └── .gitlet                     <==== All persistant data is stored within here
-    ├── Status Area (contains a single file named statusLog)                  
-    |   ├── pointerMap(master/head)               
-    |   ├── Staged for addition                
-    |   └── Staged for removal
+    ├── Status Area (contains a single file named statusLog)
+    |   └── statusLog                   
+    |       ├── pointerMap(master/head)               
+    |       ├── Staged for addition                
+    |       └── Staged for removal
     ├── Commits                   
     |   ├── commit0 (named with SHA-1)               
     |   └── commit1
@@ -39,7 +40,7 @@ The `Repository` class will set up all persistence.
 
 The `Commit` class will handle serialization of `Commit` object.
 
-The `Status Area` class tracks all status of gitlet repository
+The `StatusLog` class tracks all status of gitlet repository
 
 - Branches (by tracking `pointerMap` area)
 - Staged Files (by tracking `Staged for addition` area)
@@ -71,10 +72,11 @@ Driver class for Gitlet, a subset of the Git version-control system.
 
 #### Fields
 
-1. Field 1
-2. Field 2
+No instance variable
 
 #### Methods
+
+1. `public static void validateNumArgs(String cmd, String[] args, int n)`: Checks the number of arguments versus the expected number, throws a RuntimeException if they do not match.
 
 ---
 
@@ -104,10 +106,12 @@ Pointer which track some important position
 
 1. message
 2. timestamp
-3. a `TreeMap` which track files and their related blobs (represent with SHA-1 hash code).
+3. `filesMap`: a `TreeMap` which track files and their related blobs (represent with SHA-1 hash code).
 4. parent commit (as hash code)
 
 #### Methods
+
+- public void saveCommit();
 
 ---
 
@@ -117,10 +121,18 @@ The `Repository` class will set up all persistence.
 
 #### Fields
 
-1. Field 1
+1. pointersMap
 2. Field 2
 
 #### Methods
+
+- public void init();
+  - setup `.gitlet` repository
+  - create `initial commit`
+  - create `master` and `HEAD` pointer
+  - fail when `.gitlet` already exists, error with `A Gitlet version-control system already exists in the current directory.` message.
+- private void setupPersistence();
+  
 
 ---
 
@@ -130,10 +142,14 @@ The `statusLog` class tracks all status of gitlet repository
 
 #### Fields
 
-1. Field 1
+1. pointersMap
 2. Field 2
 
 #### Methods
+
+- public void saveStatus();
+- public void setPointer(String pointer, String SHA1);
+  - set pointer point to a file named by its hash code.
 
 ---
 
