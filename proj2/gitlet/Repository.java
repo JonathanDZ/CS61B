@@ -32,6 +32,10 @@ public class Repository {
 
 
     /* TODO: fill in the rest of this class. */
+
+    /* for init command */
+
+    /** init command */
     public static void init() {
         if (GITLET_DIR.exists() == true) {
             Utils.error("A Gitlet version-control system already exists " +
@@ -56,5 +60,12 @@ public class Repository {
         Commits.mkdir();
         Blobs.mkdir();
     }
+
+    /* for add command */
+
+    public static void add(String fileName) {
+
+    }
+
 
 }

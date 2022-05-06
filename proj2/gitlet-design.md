@@ -132,6 +132,10 @@ The `Repository` class will set up all persistence.
   - create `master` and `HEAD` pointer
   - fail when `.gitlet` already exists, error with `A Gitlet version-control system already exists in the current directory.` message.
 - private void setupPersistence();
+- public static void add(String fileName);
+  - add a file to `stagedForAddition` (if add a again, update it related blob)
+  - edge case:
+    - if a file is added to `stagedForAddition`, but later it is edited back to its original version then be added again, it should remove the file from `stagedForAddition`
   
 
 ---

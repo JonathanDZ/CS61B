@@ -33,7 +33,11 @@ public class StatusLog implements Serializable {
     }
 
     public void setPointer(String pointer, String sha1Commit) {
-        this.pointersMap.put(pointer, sha1Commit);
+        pointersMap.put(pointer, sha1Commit);
+    }
+
+    public void addFileForAddition(String fileName, String blob) {
+        stagedForAddition.put(fileName, blob);
     }
 
     public void saveStatus() {
