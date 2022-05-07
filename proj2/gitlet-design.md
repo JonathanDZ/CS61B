@@ -133,9 +133,13 @@ The `Repository` class will set up all persistence.
   - fail when `.gitlet` already exists, error with `A Gitlet version-control system already exists in the current directory.` message.
 - private void setupPersistence();
 - public static void add(String fileName);
-  - add a file to `stagedForAddition` (if add a again, update it related blob)
+  - check if the file exists (if not, print `File does not exist.`), if it is, remove it from `stagedForRemoval` area.
+  - calculate sha1 code of the file, first check the `stagedForAddition` map to remove the older blob (if they are same, stop the process), then check the latest `filesMap` map to unstage the unchanged file (if the new blob is the same as last added blob, remove the file from `stagedForAdditon`, then stop the process).
+  - add the file to `stagedForAddition`, create a blob to save the content of the file.
   - edge case:
-    - if a file is added to `stagedForAddition`, but later it is edited back to its original version then be added again, it should remove the file from `stagedForAddition`
+    - if a file is added to `stagedForAddition`, but later it is edited back to its original version then add it again, it should remove the file from `stagedForAddition`
+    - if a file is added to `stagedForAddition`, but it is modified to another version and then add it again, it should remove the older saved blob and save the new blob.
+    - if a file is added to `stagedForRemoval`, then change back to its original version, it should romve the file from `stagedForRemoval` map, or change to a new version, it should remove from `stagedForRemoval` and add to `stagedForAdditon`
   
 
 ---

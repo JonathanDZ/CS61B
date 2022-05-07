@@ -18,11 +18,11 @@ import static gitlet.Utils.error;
  */
 public class StatusLog implements Serializable {
     /** pointer -> Commit */
-    public static Map<String, String> pointersMap;
+    public Map<String, String> pointersMap;
     /** fileName -> blob */
-    public static Map<String, String> stagedForAddition;
+    public Map<String, String> stagedForAddition;
     /** a set of will be deleted files */
-    public static Set<String> stagedForRemoval;
+    public Set<String> stagedForRemoval;
 
     public static final File STATUS_AREA_DIR = join(".gitlet", "StatusArea");
 
@@ -31,6 +31,7 @@ public class StatusLog implements Serializable {
         stagedForAddition = new TreeMap<>();
         stagedForRemoval = new TreeSet<>();
     }
+
 
     public void setPointer(String pointer, String sha1Commit) {
         pointersMap.put(pointer, sha1Commit);
@@ -48,6 +49,21 @@ public class StatusLog implements Serializable {
         } catch (IOException excp) {
             throw error("Can't save statusLog object file");
         }
+    }
+
+    public static StatusLog readStatus() {
+        File statusLog = join(STATUS_AREA_DIR, "statusLog");
+        return readObject(statusLog, StatusLog.class);
+    }
+
+    /**
+     * deserialize the commit object which head points to.
+     * @return
+     */
+    public Commit readCurrentCommit() {
+        String fileName = this.pointersMap.get("HEAD");
+        Commit currentCommit = Commit.readCommit(fileName);
+        return currentCommit;
     }
 
 }

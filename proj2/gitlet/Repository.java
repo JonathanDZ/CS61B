@@ -2,7 +2,7 @@ package gitlet;
 
 import java.io.File;
 import static gitlet.Utils.*;
-import gitlet.StatusLog;
+
 
 // TODO: any imports you need here
 
@@ -37,10 +37,9 @@ public class Repository {
 
     /** init command */
     public static void init() {
-        if (GITLET_DIR.exists() == true) {
-            Utils.error("A Gitlet version-control system already exists " +
+        if (GITLET_DIR.exists()) {
+            throw Utils.error("A Gitlet version-control system already exists " +
                     "in the current directory.");
-            return;
         }
         // make directories
         setupPersistence();
@@ -64,7 +63,37 @@ public class Repository {
     /* for add command */
 
     public static void add(String fileName) {
-
+        File fileToSave = join(CWD, fileName);
+        if (!fileToSave.exists()) {
+            throw error("File does not exist.");
+        }
+        // read the saved commit and status
+        StatusLog statusLog = StatusLog.readStatus();
+        Commit currentCommit = statusLog.readCurrentCommit();
+        // check if the file is in stagedForRemoval set, if it is, remove it.
+        statusLog.stagedForRemoval.remove(fileName);
+        // calculate sha1 code of the file
+        String sha1BlobName = sha1(fileToSave);
+        // check if the file is not changed
+        String lastBlob = currentCommit.getBlob(fileName);
+        if (lastBlob.equals(sha1BlobName)) {
+            // if the file is the same, unstage the file.
+            statusLog.stagedForAddition.remove(fileName);
+            return;
+        }
+        // check if the modification is already added
+        if (statusLog.stagedForAddition.containsKey(fileName)) {
+            if (statusLog.stagedForAddition.get(fileName).equals(sha1BlobName)) {
+                // if the file isn't modified again, then left without change anything.
+                return;
+            } else {
+                // if the file is modified again, delete the old blob and create a new one.
+                Commit.deleteBlob(statusLog.stagedForAddition.get(fileName));
+                //Commit.createBlob(sha1BlobName, fileName);
+            }
+        }
+        statusLog.stagedForAddition.put(fileName, sha1BlobName);
+        Commit.createBlob(sha1BlobName, fileName);
     }
 
 
