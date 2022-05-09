@@ -140,7 +140,23 @@ The `Repository` class will set up all persistence.
     - if a file is added to `stagedForAddition`, but later it is edited back to its original version then add it again, it should remove the file from `stagedForAddition`
     - if a file is added to `stagedForAddition`, but it is modified to another version and then add it again, it should remove the older saved blob and save the new blob.
     - if a file is added to `stagedForRemoval`, then change back to its original version, it should romve the file from `stagedForRemoval` map, or change to a new version, it should remove from `stagedForRemoval` and add to `stagedForAdditon`
-  
+- public static void commit(String commitMessage);
+  - setup time & message, copy the parent commit, then link the parent and child
+  - add or update the files in `stagedForAddition` area
+  - romove the files in `stagedForRemoval` area
+  - reset `stagedForAddition` and `stagedForRemoval` area
+  - set `HEAD` pointer point to the new commit.
+  - edge cases:
+    - if `stagedForAddition` and `stagedForRemoval` are both empty, print `No changes added to the commit`
+- public static void log();
+  - iterate throw all commits, print the commit (commit.toString()), and find its parent (commit.findParent())
+  - edge cases:
+    - should override mergeCommit's findParent method to get the right parent commit.
+- public static void rm(String fileName);
+  - check the file if it is in `stagedForAddition` area, if it is, unstage the file, then return.
+  - if the file is in current commit's `filesMap`, delete the file (if user has not deleted it), and stage it to `stagedForRemoval` area.
+  - Otherwise, print the error message `No reason to remove the file.
+  - tips: use the `restrictedDelete` method in util to delete file's in `.gitlet` repository.
 
 ---
 

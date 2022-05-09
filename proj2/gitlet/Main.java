@@ -24,11 +24,21 @@ public class Main {
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
-                validateNumArgs("init", args, 1);
+                validateNumArgs("add", args, 2);
                 Repository.add(args[1]);
                 break;
             // TODO: FILL THE REST IN
             case "commit":
+                if (args.length == 1) {
+                    Utils.message("Please enter a commit message.");
+                    System.exit(0);
+                }
+                validateNumArgs("commit", args, 2);
+                Repository.commit(args[1]);
+                break;
+            case "rm":
+                validateNumArgs("rm", args, 2);
+                Repository.rm(args[1]);
                 break;
             case "log":
                 break;

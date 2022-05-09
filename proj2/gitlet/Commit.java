@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.Map;
+import java.util.Set;
 
 /** 
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -56,6 +57,22 @@ public class Commit implements Serializable {
     }
 
     /**
+     * Copies all of the mappings from the specified filesMap to this filesMap.
+     * @param anotherMap
+     */
+    public void putAll(Map<String, String> anotherMap) {
+        this.filesMap.putAll(anotherMap);
+    }
+
+    public void removeAll(Set<String> anotherSet) {
+        for (String file : anotherSet) {
+            this.filesMap.remove(file);
+        }
+    }
+
+    /* Commit Serialization */
+
+    /**
      * Commit object Serialization
      */
     public void saveCommit() {
@@ -79,9 +96,7 @@ public class Commit implements Serializable {
         return readObject(commitSavedFile, Commit.class);
     }
 
-    /**
-     * Blob related operation
-     */
+    /* Blob related operation */
 
     /**
      * Create a new blob, and save the content of the file in it.

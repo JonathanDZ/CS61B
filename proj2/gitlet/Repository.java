@@ -94,7 +94,32 @@ public class Repository {
         }
         statusLog.stagedForAddition.put(fileName, sha1BlobName);
         Commit.createBlob(sha1BlobName, fileName);
+
+        // save all changes
+        statusLog.saveStatus();
     }
 
+    public static void commit(String commitMessage) {
+        // read the saved commit and status
+        StatusLog statusLog = StatusLog.readStatus();
+        if (statusLog.stagedForAddition.isEmpty() && statusLog.stagedForRemoval.isEmpty()) {
+            message("No changes added to the commit");
+            return;
+        }
+        Commit parentCommit = statusLog.readCurrentCommit();
 
+        Commit newCommit = new Commit(commitMessage, parentCommit);
+        newCommit.putAll(statusLog.stagedForAddition);
+        newCommit.removeAll(statusLog.stagedForRemoval);
+        statusLog.resetStaged();
+        statusLog.setPointer("HEAD", sha1(newCommit));
+
+        // save all changes
+        newCommit.saveCommit();
+        statusLog.saveStatus();
+    }
+
+    public static void rm(String fileName) {
+
+    }
 }

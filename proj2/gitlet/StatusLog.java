@@ -32,14 +32,19 @@ public class StatusLog implements Serializable {
         stagedForRemoval = new TreeSet<>();
     }
 
-
     public void setPointer(String pointer, String sha1Commit) {
         pointersMap.put(pointer, sha1Commit);
     }
 
-    public void addFileForAddition(String fileName, String blob) {
-        stagedForAddition.put(fileName, blob);
+    /**
+     * clear all registered staging information
+     */
+    public void resetStaged() {
+        this.stagedForRemoval.clear();
+        this.stagedForAddition.clear();
     }
+
+    /* handle serialization issue */
 
     public void saveStatus() {
         File statusLogSavedFile = join(STATUS_AREA_DIR, "statusLog");
@@ -58,7 +63,7 @@ public class StatusLog implements Serializable {
 
     /**
      * deserialize the commit object which head points to.
-     * @return
+     * @return the commit pointed by HEAD
      */
     public Commit readCurrentCommit() {
         String fileName = this.pointersMap.get("HEAD");
