@@ -44,6 +44,18 @@ public class Main {
                 validateNumArgs("log", args, 1);
                 Repository.log();
                 break;
+            case "checkout":
+                if (args.length > 4 || args.length < 2) {
+                    Utils.message("Incorrect operands");
+                    System.exit(0);
+                }
+                if (args.length == 4) {
+                    if (args[2] != "--") {
+                        Utils.message("Incorrect operands");
+                        System.exit(0);
+                    }
+                    Repository.checkoutToCommitID(args[1], args[3]);
+                }
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);

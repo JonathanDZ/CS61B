@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -153,6 +154,47 @@ public class Repository {
             System.out.print(commitPointer);
             commitPointer = commitPointer.findParent();
         }
+    }
+
+    private static void checkout(Commit checkoutCommit, String fileName) {
+        if (!checkoutCommit.containsFile(fileName)) {
+            throw error("File does not exist in that commit.");
+        }
+        String blobName = checkoutCommit.getBlob(fileName);
+        // the file in the current working directory
+        File fileToSave = join(CWD, fileName);
+        // the file in the blob
+        File fileBlob = join(Blobs, blobName);
+        if (!fileToSave.exists()) {
+            try {
+                fileToSave.createNewFile();
+            } catch (IOException excp) {
+                throw error("Can't create the file.");
+            }
+        }
+        String fileContent = readContentsAsString(fileBlob);
+        writeContents(fileToSave, fileContent);
+    }
+
+    private static String findMatchedCommitID(String briefCommitID) {
+        List<String> commitList = plainFilenamesIn(Commits);
+        String matchedCommitName = null;
+        for (String commitName : commitList) {
+            if (commitName.startsWith(briefCommitID)) {
+                matchedCommitName = commitName;
+                break;
+            }
+        }
+        if (matchedCommitName == null) {
+            throw error("No commit with that id exists.");
+        }
+        return matchedCommitName;
+    }
+
+    public static void checkoutToCommitID(String briefCommitID, String fileName) {
+        String commitID = findMatchedCommitID(briefCommitID);
+        Commit checkoutCommit = Commit.readCommit(commitID);
+        checkout(checkoutCommit, fileName);
     }
 
 }

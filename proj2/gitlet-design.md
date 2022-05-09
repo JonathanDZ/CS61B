@@ -172,6 +172,25 @@ The `Repository` class will set up all persistence.
   - edge cases:
     - should override mergedCommit's findParent method to get the right parent commit (?).
     - should override mergedCommit's toString method to show its merged parent commit.
+- public static void checkout()
+  - checkout(String briefCommitID, String fileName);
+    - find the commit named by briefCommitID
+    - put the file saved in the commit in the working directory (if the file already exists, overwrite the file)
+    - edge cases:
+      - if the file does not exist in the commit named by briefCommitID, print error `File does not exist in that commit.`
+      - if the ID do not match any commit, print `No commit with that id exists.`
+  - use `checkout [commit id] -- [file name]` to implement other possible cases
+    - checkoutToHead();
+      - set `commit id` to the commit pointed by `HEAD`
+    - checkoutToBranch(String branchName);
+      - if no branch with that name exists, print `No such branch exists.`
+      - if branchName is the same as the branch which HEAD point to, print `No need to checkout the current branch.`
+      - set `commit id` to the commit pointed by given branch
+      - check if any file exists in the working directory which is not tracked by current commit, but will be changed by new commit. If it is, print `There is an untracked file in the way; delete it, or add and commit it first.` and exit.
+      - iterate through all file in `filesMap` with basic checkout method, create or replace all tracked files
+      - delete all files which are tracked in previous commit pointed by `HEAD`, but not tracked in the new commit pointed by `branchName`
+      - point the `HEAD` pointer to the commit pointed by `branchName`
+      - clean staging area
 
 ---
 
