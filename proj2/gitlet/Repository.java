@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
+
 import static gitlet.Utils.*;
 
 
@@ -120,6 +122,37 @@ public class Repository {
     }
 
     public static void rm(String fileName) {
-
+        // read the saved commit and status
+        StatusLog statusLog = StatusLog.readStatus();
+        Commit currentCommit = statusLog.readCurrentCommit();
+        if (statusLog.stagedForAddition.containsKey(fileName)) {
+            // delete the blob the file link to
+            Commit.deleteBlob(statusLog.stagedForAddition.get(fileName));
+            statusLog.stagedForAddition.remove(fileName);
+        } else if (currentCommit.containsFile(fileName)) {
+            statusLog.stagedForRemoval.add(fileName);
+            File fileToDelete = join(CWD, fileName);
+            if (fileToDelete.exists() && fileToDelete.isFile()) {
+                try {
+                    fileToDelete.delete();
+                } catch (Exception excp) {
+                    throw error("Can't delete the given file");
+                }
+            }
+        } else {
+            throw error("No reason to remove the file.");
+        }
     }
+
+    public static void log() {
+        // read the saved commit and status
+        StatusLog statusLog = StatusLog.readStatus();
+        Commit commitPointer = statusLog.readCurrentCommit();
+
+        while (commitPointer != null) {
+            System.out.print(commitPointer);
+            commitPointer = commitPointer.findParent();
+        }
+    }
+
 }

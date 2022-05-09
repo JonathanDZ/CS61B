@@ -115,6 +115,20 @@ Pointer which track some important position
 
 ---
 
+### MergedCommit
+
+Extend from Commit class. It saves a special commit node, which is generated after a merge. 
+
+#### Fields
+
+- String branchparent; (record its parent commit in the merged branch)
+
+#### Methods
+
+- gg
+
+---
+
 ### Repository
 
 The `Repository` class will set up all persistence.
@@ -148,15 +162,16 @@ The `Repository` class will set up all persistence.
   - set `HEAD` pointer point to the new commit.
   - edge cases:
     - if `stagedForAddition` and `stagedForRemoval` are both empty, print `No changes added to the commit`
-- public static void log();
-  - iterate throw all commits, print the commit (commit.toString()), and find its parent (commit.findParent())
-  - edge cases:
-    - should override mergeCommit's findParent method to get the right parent commit.
 - public static void rm(String fileName);
   - check the file if it is in `stagedForAddition` area, if it is, unstage the file, then return.
   - if the file is in current commit's `filesMap`, delete the file (if user has not deleted it), and stage it to `stagedForRemoval` area.
   - Otherwise, print the error message `No reason to remove the file.
   - tips: use the `restrictedDelete` method in util to delete file's in `.gitlet` repository.
+- public static void log();
+  - iterate through all commits, print the commit (commit.toString()), and find its parent (commit.findParent())
+  - edge cases:
+    - should override mergedCommit's findParent method to get the right parent commit (?).
+    - should override mergedCommit's toString method to show its merged parent commit.
 
 ---
 

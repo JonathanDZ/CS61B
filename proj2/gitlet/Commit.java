@@ -57,17 +57,30 @@ public class Commit implements Serializable {
     }
 
     /**
-     * Copies all of the mappings from the specified filesMap to this filesMap.
+     * Copies all of the mappings from the specified Map to this filesMap.
      * @param anotherMap
      */
     public void putAll(Map<String, String> anotherMap) {
         this.filesMap.putAll(anotherMap);
     }
 
+    /**
+     * removes all of the mappings from the specified Set to this filesMap.
+     * @param anotherSet
+     */
     public void removeAll(Set<String> anotherSet) {
         for (String file : anotherSet) {
             this.filesMap.remove(file);
         }
+    }
+
+    /**
+     * Check if the commit tracks the given file
+     * @param fileName
+     * @return
+     */
+    public boolean containsFile(String fileName) {
+        return this.filesMap.containsKey(fileName);
     }
 
     /* Commit Serialization */
@@ -88,12 +101,43 @@ public class Commit implements Serializable {
 
     /**
      * Deserialize a commit object from a given file (named by hashcode).
-     * @param fileName
-     * @return
+     * @param fileName given hash code name of a commit
+     * @return the wanted commit object
      */
     public static Commit readCommit(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
         File commitSavedFile = join(COMMITS_DIR, fileName);
         return readObject(commitSavedFile, Commit.class);
+    }
+
+    /* Print the commits */
+
+    @Override
+    public String toString() {
+        String message = "===" + "\n";
+        message += "commit " + sha1(this) + "\n";
+        message += "Date: " + date.toString() + "\n";
+        message += this.message + "\n";
+        return message;
+    }
+
+    public Commit findParent() {
+        Commit parentCommit = readCommit(this.parentCommit);
+        return parentCommit;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public Date getDate() {
+        return this.date;
+    }
+
+    public String getParentCommit() {
+        return this.parentCommit;
     }
 
     /* Blob related operation */
@@ -123,8 +167,8 @@ public class Commit implements Serializable {
 
     /**
      * Find which blob the file map to in this commit.
-     * @param fileName
-     * @return
+     * @param fileName specific file in this commit
+     * @return the blob hash code name
      */
     public String getBlob(String fileName) {
         String blobName = this.filesMap.get(fileName);
