@@ -83,6 +83,10 @@ public class Commit implements Serializable {
         return this.filesMap.containsKey(fileName);
     }
 
+    public Map<String, String> getFilesMap() {
+        return this.filesMap;
+    }
+
     /* Commit Serialization */
 
     /**

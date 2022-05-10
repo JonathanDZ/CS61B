@@ -3,6 +3,9 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static gitlet.Utils.*;
 
@@ -179,6 +182,9 @@ public class Repository {
     private static String findMatchedCommitID(String briefCommitID) {
         List<String> commitList = plainFilenamesIn(Commits);
         String matchedCommitName = null;
+        if (commitList == null) {
+            throw error("No commit with that id exists.");
+        }
         for (String commitName : commitList) {
             if (commitName.startsWith(briefCommitID)) {
                 matchedCommitName = commitName;
@@ -195,6 +201,73 @@ public class Repository {
         String commitID = findMatchedCommitID(briefCommitID);
         Commit checkoutCommit = Commit.readCommit(commitID);
         checkout(checkoutCommit, fileName);
+    }
+
+    public static void checkoutToHead(String fileName) {
+        StatusLog statusLog = StatusLog.readStatus();
+        Commit checkoutCommit = Commit.readCommit(statusLog.pointersMap.get("HEAD"));
+        checkout(checkoutCommit, fileName);
+    }
+
+    public static void checkoutToBranch(String branchName) {
+        StatusLog statusLog = StatusLog.readStatus();
+        String branchCommit = statusLog.pointersMap.get(branchName);
+        if (branchCommit == null) {
+            throw error("No such branch exists.");
+        }
+        String HEADCommit = statusLog.pointersMap.get("HEAD");
+        if (branchCommit.equals(HEADCommit)) {
+            throw error("No need to checkout the current branch");
+        }
+        Commit checkoutCommit = Commit.readCommit(branchCommit);
+        Commit currentCommit = Commit.readCommit(HEADCommit);
+        Map<String, String> checkoutFilesMap = checkoutCommit.getFilesMap();
+        Map<String, String> currentFilesMap = currentCommit.getFilesMap();
+        Set<String> replaceFilesSet = new TreeSet<>();
+        for (String fileName : checkoutFilesMap.keySet()) {
+            if (currentFilesMap.containsKey(fileName)) {
+                replaceFilesSet.add(fileName);
+            } else {
+                File fileToCreate = join(CWD, fileName);
+                if (fileToCreate.exists()) {
+                    throw error("There is an untracked file in the way; " +
+                            "delete it, or add and commit it first.");
+                }
+            }
+        }
+        Set<String> deleteFilesSet = currentFilesMap.keySet();
+        deleteFilesSet.removeAll(replaceFilesSet);
+        for (String fileName : deleteFilesSet) {
+            File fileToDelete = join(CWD, fileName);
+            if (!fileToDelete.delete()) {
+                throw error("Can't delete file: " + fileName);
+            }
+        }
+        Set<String> createFilesSet = checkoutFilesMap.keySet();
+        createFilesSet.removeAll(replaceFilesSet);
+        for (String fileName : createFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            try {
+                fileToCreate.createNewFile();
+                String content = readContentsAsString(contentSavedBlob);
+                writeContents(fileToCreate, content);
+            } catch (IOException excp) {
+                throw error("Can't create file: " + fileName);
+            }
+        }
+        for (String fileName : replaceFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            String content = readContentsAsString(contentSavedBlob);
+            writeContents(fileToCreate, content);
+        }
+        statusLog.setPointer("HEAD", branchCommit);
+        statusLog.resetStaged();
+        // save changes
+        statusLog.saveStatus();
     }
 
 }

@@ -50,12 +50,23 @@ public class Main {
                     System.exit(0);
                 }
                 if (args.length == 4) {
-                    if (args[2] != "--") {
+                    if (args[2].equals("--")) {
                         Utils.message("Incorrect operands");
                         System.exit(0);
                     }
                     Repository.checkoutToCommitID(args[1], args[3]);
                 }
+                if (args.length == 3) {
+                    if (args[1].equals("--")) {
+                        Utils.message("Incorrect operands");
+                        System.exit(0);
+                    }
+                    Repository.checkoutToHead(args[2]);
+                }
+                if (args.length == 2) {
+                    Repository.checkoutToBranch(args[1]);
+                }
+                break;
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);
