@@ -87,4 +87,17 @@ public class TestBSTMap {
         assertTrue(b.containsKey("hi"));
     }
 
+    @Test
+    public void randomInsertTest() {
+        BSTMap<Integer, Integer> b = new BSTMap<Integer, Integer>();
+        b.put(5,1);
+        b.put(3,2);
+        b.put(7,3);
+        b.put(2,4);
+        b.put(4,5);
+        b.put(6,6);
+        b.put(8,7);
+        System.out.print("lll");
+    }
+
 }
