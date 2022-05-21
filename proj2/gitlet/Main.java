@@ -50,14 +50,14 @@ public class Main {
                     System.exit(0);
                 }
                 if (args.length == 4) {
-                    if (args[2].equals("--")) {
+                    if (!args[2].equals("--")) {
                         Utils.message("Incorrect operands");
                         System.exit(0);
                     }
                     Repository.checkoutToCommitID(args[1], args[3]);
                 }
                 if (args.length == 3) {
-                    if (args[1].equals("--")) {
+                    if (!args[1].equals("--")) {
                         Utils.message("Incorrect operands");
                         System.exit(0);
                     }
@@ -66,6 +66,10 @@ public class Main {
                 if (args.length == 2) {
                     Repository.checkoutToBranch(args[1]);
                 }
+                break;
+            case "global-log":
+                validateNumArgs("global-log", args, 1);
+                Repository.globalLog();
                 break;
             default:
                 Utils.message("No command with that name exists.");

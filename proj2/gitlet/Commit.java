@@ -6,9 +6,7 @@ import static gitlet.Utils.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /** 
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -47,12 +45,14 @@ public class Commit implements Serializable {
     public Commit(String message, Commit parentCommit) {
         this.message = message;
         if (parentCommit == null) {
+            date = new Date();
             date.setTime(0);
-            filesMap = null;
+            filesMap = new TreeMap<>();
+            this.parentCommit = null;
         }else {
             date = new Date();
             filesMap = parentCommit.filesMap;
-            this.parentCommit = sha1(parentCommit);
+            this.parentCommit = sha1(serialize(parentCommit));
         }
     }
 
@@ -93,7 +93,7 @@ public class Commit implements Serializable {
      * Commit object Serialization
      */
     public void saveCommit() {
-        String sha1Code = sha1(this);
+        String sha1Code = sha1(serialize(this));
         File commitSavedFile = join(COMMITS_DIR, sha1Code);
         try {
             commitSavedFile.createNewFile();
@@ -121,9 +121,10 @@ public class Commit implements Serializable {
     @Override
     public String toString() {
         String message = "===" + "\n";
-        message += "commit " + sha1(this) + "\n";
+        message += "commit " + sha1(serialize(this)) + "\n";
         message += "Date: " + date.toString() + "\n";
         message += this.message + "\n";
+        message += "\n";
         return message;
     }
 
@@ -165,7 +166,15 @@ public class Commit implements Serializable {
 
     public static void deleteBlob(String blobName) {
         File blobSavedFile = join(BLOBS_DIR, blobName);
-        restrictedDelete(blobSavedFile);
+        // restrictedDelete(blobSavedFile);
+        File fileToDelete = blobSavedFile;
+        if (fileToDelete.exists() && fileToDelete.isFile()) {
+            try {
+                fileToDelete.delete();
+            } catch (Exception excp) {
+                throw error("Can't delete the given file");
+            }
+        }
     }
 
 

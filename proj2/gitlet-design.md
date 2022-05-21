@@ -20,7 +20,7 @@ Which method should write in repository class? And which method should write in 
 
 ```text
 CWD                             <==== Whatever the current working directory is.
-└── .gitlet                     <==== All persistant data is stored within here
+└── .gitlet                     <==== All persistent data is stored within here
     ├── Status Area (contains a single file named statusLog)
     |   └── statusLog                   
     |       ├── pointerMap(master/head)               
@@ -31,7 +31,7 @@ CWD                             <==== Whatever the current working directory is.
     |   └── commit1
     └── Blobs                    
         ├── blob1 (named with SHA-1)               
-        ├── bolb2 
+        ├── blob2 
         ├── ...
         └── blobN
 ```
@@ -165,7 +165,7 @@ The `Repository` class will set up all persistence.
 - public static void rm(String fileName);
   - check the file if it is in `stagedForAddition` area, if it is, unstage the file, then return.
   - if the file is in current commit's `filesMap`, delete the file (if user has not deleted it), and stage it to `stagedForRemoval` area.
-  - Otherwise, print the error message `No reason to remove the file.
+  - Otherwise, print the error message `No reason to remove the file.`
   - tips: use the `restrictedDelete` method in util to delete file's in `.gitlet` repository.
 - public static void log();
   - iterate through all commits, print the commit (commit.toString()), and find its parent (commit.findParent())
@@ -191,6 +191,9 @@ The `Repository` class will set up all persistence.
       - delete all files which are tracked in previous commit pointed by `HEAD`, but not tracked in the new commit pointed by `branchName`
       - point the `HEAD` pointer to the commit pointed by `branchName`
       - clean staging area
+- public static void globalLog();
+  - Use `plainFilenamesIn()` method to list all file name in the `.gitlet/Commits` directory.
+  - Iterate through the list to deserialize all commits and print them.
 
 ---
 

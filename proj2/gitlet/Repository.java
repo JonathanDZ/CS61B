@@ -54,8 +54,8 @@ public class Repository {
         initialCommit.saveCommit();
         // setup pointers
         StatusLog statusLog = new StatusLog();
-        statusLog.setPointer("master", sha1(initialCommit));
-        statusLog.setPointer("HEAD", sha1(initialCommit));
+        statusLog.setPointer("master", sha1(serialize(initialCommit)));
+        statusLog.setPointer("HEAD", sha1(serialize(initialCommit)));
         statusLog.saveStatus();
     }
 
@@ -79,10 +79,10 @@ public class Repository {
         // check if the file is in stagedForRemoval set, if it is, remove it.
         statusLog.stagedForRemoval.remove(fileName);
         // calculate sha1 code of the file
-        String sha1BlobName = sha1(fileToSave);
+        String sha1BlobName = sha1(readContents(fileToSave));
         // check if the file is not changed
         String lastBlob = currentCommit.getBlob(fileName);
-        if (lastBlob.equals(sha1BlobName)) {
+        if (sha1BlobName.equals(lastBlob)) {
             // if the file is the same, unstage the file.
             statusLog.stagedForAddition.remove(fileName);
             return;
@@ -109,7 +109,7 @@ public class Repository {
         // read the saved commit and status
         StatusLog statusLog = StatusLog.readStatus();
         if (statusLog.stagedForAddition.isEmpty() && statusLog.stagedForRemoval.isEmpty()) {
-            message("No changes added to the commit");
+            message("No changes added to the commit.");
             return;
         }
         Commit parentCommit = statusLog.readCurrentCommit();
@@ -118,7 +118,7 @@ public class Repository {
         newCommit.putAll(statusLog.stagedForAddition);
         newCommit.removeAll(statusLog.stagedForRemoval);
         statusLog.resetStaged();
-        statusLog.setPointer("HEAD", sha1(newCommit));
+        statusLog.setPointer("HEAD", sha1(serialize(newCommit)));
 
         // save all changes
         newCommit.saveCommit();
@@ -146,6 +146,9 @@ public class Repository {
         } else {
             throw error("No reason to remove the file.");
         }
+
+        // Save all change
+        statusLog.saveStatus();
     }
 
     public static void log() {
@@ -156,6 +159,14 @@ public class Repository {
         while (commitPointer != null) {
             System.out.print(commitPointer);
             commitPointer = commitPointer.findParent();
+        }
+    }
+
+    public static void globalLog() {
+        List<String> commitsList = plainFilenamesIn(Commits);
+        for (String commitFilename: commitsList) {
+            Commit commit = Commit.readCommit(commitFilename);
+            System.out.print(commit);
         }
     }
 
