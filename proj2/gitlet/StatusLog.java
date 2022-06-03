@@ -21,7 +21,7 @@ public class StatusLog implements Serializable {
     public Map<String, String> pointersMap;
     /** fileName -> blob */
     public Map<String, String> stagedForAddition;
-    /** a set of will be deleted files */
+    /** a set of deleted files, will be untracked in next commit */
     public Set<String> stagedForRemoval;
 
     public static final File STATUS_AREA_DIR = join(".gitlet", "StatusArea");

@@ -194,6 +194,29 @@ The `Repository` class will set up all persistence.
 - public static void globalLog();
   - Use `plainFilenamesIn()` method to list all file name in the `.gitlet/Commits` directory.
   - Iterate through the list to deserialize all commits and print them.
+- public static void find(String message);
+  - Use `plainFilenamesIn()` method to list all file name in the `.gitlet/Commits` directory.
+  - Iterate through the list to deserialize all commits and find the commit with required message.
+  - Edge case: If no such commit exists, print the error message `Found no commit with that message.`
+- public static void status();
+  - Deserialize `statusLog`
+  - Print branches:
+    - read what HEAD point at
+    - print `=== Branches ===\n`
+    - print every branch, if the branch point to the same commit with HEAD pointer, add a `*` in the front.
+    - print `\n`
+  - Print Staged Files:
+    - print `=== Staged Files ===`
+    - print the key of `stagedForAddition` map
+    - print `\n`
+  - Print Removed Files:
+    - print `=== Removed Files ===`
+    - print the key of `stagedForRemoval` map
+    - print `\n`
+  - Print `=== Modifications Not Staged For Commit ===`
+  - Print `\n`
+  - Print `=== Untracked Files ===`
+  - Print `\n`
 
 ---
 

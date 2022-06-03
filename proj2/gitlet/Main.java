@@ -71,6 +71,14 @@ public class Main {
                 validateNumArgs("global-log", args, 1);
                 Repository.globalLog();
                 break;
+            case "find":
+                validateNumArgs("find", args, 2);
+                Repository.find(args[1]);
+                break;
+            case "status":
+                validateNumArgs("status", args, 1);
+                Repository.status();
+                break;
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);

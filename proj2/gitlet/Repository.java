@@ -170,6 +170,56 @@ public class Repository {
         }
     }
 
+    public static void find(String message) {
+        List<String> commitsList = plainFilenamesIn(Commits);
+        boolean commitFound = false;
+        for (String commitFilename: commitsList) {
+            Commit commit = Commit.readCommit(commitFilename);
+            if (commit.getMessage().equals(message)) {
+                System.out.println(sha1(serialize(commit)));
+                commitFound = true;
+            }
+        }
+        if (!commitFound) {
+            error("Found no commit with that message.");
+        }
+    }
+
+    public static void status() {
+        StatusLog statusLog = StatusLog.readStatus();
+
+        String headCommit = statusLog.pointersMap.get("HEAD");
+        System.out.println("=== Branches ===");
+        for (String branch: statusLog.pointersMap.keySet()) {
+            if (branch.equals("HEAD")) {
+                continue;
+            }
+            if (statusLog.pointersMap.get(branch).equals(headCommit)) {
+                branch = "*" + branch;
+            }
+            System.out.println(branch);
+        }
+        System.out.println("");
+
+        System.out.println("=== Staged Files ===");
+        for (String filename: statusLog.stagedForAddition.keySet()) {
+            System.out.println(filename);
+        }
+        System.out.println("");
+
+        System.out.println("=== Removed Files ===");
+        for (String filename: statusLog.stagedForRemoval) {
+            System.out.println(filename);
+        }
+        System.out.println("");
+
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println("");
+
+        System.out.println("=== Untracked Files ===");
+        System.out.println("");
+    }
+
     private static void checkout(Commit checkoutCommit, String fileName) {
         if (!checkoutCommit.containsFile(fileName)) {
             throw error("File does not exist in that commit.");
