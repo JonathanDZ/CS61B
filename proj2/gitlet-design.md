@@ -140,6 +140,8 @@ The `Repository` class will set up all persistence.
 
 #### Methods
 
+> Find a serious bug in the methods, the gitLet should track current branch, but it's not stored in statusLog, I should add a new variable currentBranch to track it.
+
 - public void init();
   - setup `.gitlet` repository
   - create `initial commit`
@@ -148,7 +150,7 @@ The `Repository` class will set up all persistence.
 - private void setupPersistence();
 - public static void add(String fileName);
   - check if the file exists (if not, print `File does not exist.`), if it is, remove it from `stagedForRemoval` area.
-  - calculate sha1 code of the file, first check the `stagedForAddition` map to remove the older blob (if they are same, stop the process), then check the latest `filesMap` map to unstage the unchanged file (if the new blob is the same as last added blob, remove the file from `stagedForAdditon`, then stop the process).
+  - calculate sha1 code of the file, first check the `stagedForAddition` map to remove the older blob (if they are same, stop the process), then check the latest `filesMap` map to unstage the unchanged file (if the new blob is the same as last added blob, remove the file from `stagedForAddition`, then stop the process).
   - add the file to `stagedForAddition`, create a blob to save the content of the file.
   - edge case:
     - if a file is added to `stagedForAddition`, but later it is edited back to its original version then add it again, it should remove the file from `stagedForAddition`
@@ -157,9 +159,10 @@ The `Repository` class will set up all persistence.
 - public static void commit(String commitMessage);
   - setup time & message, copy the parent commit, then link the parent and child
   - add or update the files in `stagedForAddition` area
-  - romove the files in `stagedForRemoval` area
+  - remove the files in `stagedForRemoval` area
   - reset `stagedForAddition` and `stagedForRemoval` area
-  - set `HEAD` pointer point to the new commit.
+  - set `HEAD` pointer point to the new commit. (find a bug here!)
+    - should also set current branch pointer points to new commit
   - edge cases:
     - if `stagedForAddition` and `stagedForRemoval` are both empty, print `No changes added to the commit`
 - public static void rm(String fileName);
@@ -217,6 +220,10 @@ The `Repository` class will set up all persistence.
   - Print `\n`
   - Print `=== Untracked Files ===`
   - Print `\n`
+- public static void branch(String branchName);
+  - deserialize `statusLog`
+  - add a new key `branchName` in `pointerMap`, value is the commit HEAD points to.
+  - edge case: if `branchName` already exist, print error `A branch with that name already exists.`
 
 ---
 

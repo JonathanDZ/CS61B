@@ -331,4 +331,17 @@ public class Repository {
         statusLog.saveStatus();
     }
 
+    public static void branch(String branchName) {
+        StatusLog statusLog = StatusLog.readStatus();
+
+        if (statusLog.pointersMap.containsKey(branchName)) {
+            error("A branch with that name already exists.");
+        }
+        String currentCommitName = statusLog.pointersMap.get("HEAD");
+        statusLog.pointersMap.put(branchName, currentCommitName);
+
+        // save changes
+        statusLog.saveStatus();
+    }
+
 }

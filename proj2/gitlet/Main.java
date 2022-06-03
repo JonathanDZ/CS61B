@@ -79,6 +79,10 @@ public class Main {
                 validateNumArgs("status", args, 1);
                 Repository.status();
                 break;
+            case "branch":
+                validateNumArgs("branch", args, 2);
+                Repository.branch(args[1]);
+                break;
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);
