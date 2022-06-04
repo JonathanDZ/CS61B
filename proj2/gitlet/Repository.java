@@ -300,6 +300,14 @@ public class Repository {
             }
         }
 
+        for (String fileName : replaceFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            String content = readContentsAsString(contentSavedBlob);
+            writeContents(fileToCreate, content);
+        }
+
         Set<String> deleteFilesSet = currentFilesMap.keySet();
         deleteFilesSet.removeAll(replaceFilesSet);
         for (String fileName : deleteFilesSet) {
@@ -322,14 +330,6 @@ public class Repository {
             } catch (IOException excp) {
                 throw error("Can't create file: " + fileName);
             }
-        }
-
-        for (String fileName : replaceFilesSet) {
-            String blobName = checkoutFilesMap.get(fileName);
-            File fileToCreate = join(CWD, fileName);
-            File contentSavedBlob = join(Blobs, blobName);
-            String content = readContentsAsString(contentSavedBlob);
-            writeContents(fileToCreate, content);
         }
 
         statusLog.setPointer("HEAD", branchCommit);
@@ -390,6 +390,14 @@ public class Repository {
             }
         }
 
+        for (String fileName : replaceFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            String content = readContentsAsString(contentSavedBlob);
+            writeContents(fileToCreate, content);
+        }
+
         Set<String> deleteFilesSet = currentFilesMap.keySet();
         deleteFilesSet.removeAll(replaceFilesSet);
         for (String fileName : deleteFilesSet) {
@@ -412,14 +420,6 @@ public class Repository {
             } catch (IOException excp) {
                 throw error("Can't create file: " + fileName);
             }
-        }
-
-        for (String fileName : replaceFilesSet) {
-            String blobName = checkoutFilesMap.get(fileName);
-            File fileToCreate = join(CWD, fileName);
-            File contentSavedBlob = join(Blobs, blobName);
-            String content = readContentsAsString(contentSavedBlob);
-            writeContents(fileToCreate, content);
         }
 
         statusLog.setPointer("HEAD", commitID);

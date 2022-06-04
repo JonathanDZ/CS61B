@@ -243,6 +243,34 @@ old commit:     /####/####
 
 ---
 
+- public static void merge()
+  - how to find latest common ancestor?
+    - create two stacks to save all previous commits of master and branch pointers, and pop commits one by one to compare their common ancestor
+  - how to setup conflict?
+    - read fileA and fileB as two string, concatenate follow things:
+    - `<<<<<<< HEAD\n` + fileA + `=======\n` + fileB + `>>>>>>>`
+    - write the new string back to new file and its blob.
+  - assume merge branch to master
+    - create a new `merge commit`
+    - find latest common ancestor(LCA), like above said.
+    - put all keys in the commit.fileMap of LCA, master, and branch into one set named `allFileSet`
+    - iterate through the `allFileSet`:
+      - first get the blob of LCA
+        - if in master or branch only one match the blob sha1 name
+          - set the file in new commit to the changed blob
+        - if they both changed
+          - check if the master file is the same as branch file, if it is, set the file in new commit to the changed blob
+          - otherwise, set `conflict`
+      - if the file doesn't exist in LCA:
+        - if the file only exist in one commit of master and branch
+          - set the file in new commit to the changed blob
+        - if the file both exists in master and branch
+          - if the two files are the same, set the file in new commit to the changed blob.
+          - otherwise, set `conflict`
+      - compare file in master and file in new commit, if it changed, stage the change (it can be addition or removal)
+      - commit the `merge commit` with message `Merged [given branch name] into [current branch name].`
+      - if merge encountered a conflict, print `Encountered a merge conflict.`
+
 ### statusLog
 
 The `statusLog` class tracks all status of gitlet repository
@@ -320,5 +348,7 @@ Edge case:
   - set currentBranch point to new commit in commit method
   - use currentBranch to decide whether add * before branch name in status method.
   - set currentBranch to branchName in checkoutToBranch method.
+- find a bug in checkoutToBranch method, `checkoutFilesMap` will delete it elements, when its soft copy delete some element, that will make the program fail to find the value of some key in `checkoutFilesMap`
+  - I changed the order of the code, to make sure the program search the element in the first place, and then manipulate the map itself.
 
 

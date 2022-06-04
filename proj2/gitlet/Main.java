@@ -87,6 +87,10 @@ public class Main {
                 validateNumArgs("rm-branch", args, 2);
                 Repository.rmBranch(args[1]);
                 break;
+            case "reset":
+                validateNumArgs("reset", args, 2);
+                Repository.reset(args[1]);
+                break;
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);
