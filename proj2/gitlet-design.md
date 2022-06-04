@@ -178,7 +178,7 @@ The `Repository` class will set up all persistence.
 - public static void checkout()
   - checkout(String briefCommitID, String fileName);
     - find the commit named by briefCommitID
-    - put the file saved in the commit in the working directory (if the file already exists, overwrite the file)
+    - put the file saved in the commit into the working directory (if the file already exists, overwrite the file)
     - edge cases:
       - if the file does not exist in the commit named by briefCommitID, print error `File does not exist in that commit.`
       - if the ID do not match any commit, print `No commit with that id exists.`
@@ -224,6 +224,22 @@ The `Repository` class will set up all persistence.
   - deserialize `statusLog`
   - add a new key `branchName` in `pointerMap`, value is the commit HEAD points to.
   - edge case: if `branchName` already exist, print error `A branch with that name already exists.`
+- public static void rmBranch(String branchName);
+  - deserialize `statusLog`
+  - delete branchName in pointerMap
+  - edge case:
+    - if branchName doesn't exist, throw error `A branch with that name does not exist.`
+    - if branchName is currentBranch, throw error `Cannot remove the current branch.`
+- public static void reset(String briefCommitID);
+  - This command should work exactly like `checkoutToBranch` method with slight changes.
+  - should also change current branch point to reset commit id, set it in pointerMap (currentBranch -> commitID)
+
+``` txt
+new commit: ####/####/
+old commit:     /####/####
+        *create /change/ delete
+    *[error if exists]
+```
 
 ---
 
@@ -251,7 +267,7 @@ The `statusLog` class tracks all status of gitlet repository
 
 ## Order of Completion
 
-> Todo: The step by step guide to finish this complicated task.
+> Todo: The step by step guide to finish this complicate task.
 
 Base on the features we we want to support, we can divide our one big task to several levels of functionalities that we want to implement:
 
@@ -293,3 +309,16 @@ Edge case:
     - if a file is already tracked, then just change the link.
 4. define the parent of the new commit.
 5. move the current branch pointer and the Head pointer to the new created commit.
+
+---
+
+## Bug fix
+
+- add a new `currentBranch` variable in `statusLog` to track what current branch is.
+  - add a currentBranch variable in `statusLog`
+  - set currentBranch to master in init method.
+  - set currentBranch point to new commit in commit method
+  - use currentBranch to decide whether add * before branch name in status method.
+  - set currentBranch to branchName in checkoutToBranch method.
+
+

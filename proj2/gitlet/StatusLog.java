@@ -23,6 +23,7 @@ public class StatusLog implements Serializable {
     public Map<String, String> stagedForAddition;
     /** a set of deleted files, will be untracked in next commit */
     public Set<String> stagedForRemoval;
+    public String currentBranch;
 
     public static final File STATUS_AREA_DIR = join(".gitlet", "StatusArea");
 

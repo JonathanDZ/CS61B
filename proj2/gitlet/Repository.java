@@ -56,6 +56,7 @@ public class Repository {
         StatusLog statusLog = new StatusLog();
         statusLog.setPointer("master", sha1(serialize(initialCommit)));
         statusLog.setPointer("HEAD", sha1(serialize(initialCommit)));
+        statusLog.currentBranch = "master";
         statusLog.saveStatus();
     }
 
@@ -118,7 +119,9 @@ public class Repository {
         newCommit.putAll(statusLog.stagedForAddition);
         newCommit.removeAll(statusLog.stagedForRemoval);
         statusLog.resetStaged();
-        statusLog.setPointer("HEAD", sha1(serialize(newCommit)));
+        statusLog.setPointer("HEAD", sha1((Object) serialize(newCommit)));
+        String currentBranch = statusLog.currentBranch;
+        statusLog.setPointer(currentBranch, sha1((Object) serialize(newCommit)));
 
         // save all changes
         newCommit.saveCommit();
@@ -181,20 +184,19 @@ public class Repository {
             }
         }
         if (!commitFound) {
-            error("Found no commit with that message.");
+            throw error("Found no commit with that message.");
         }
     }
 
     public static void status() {
         StatusLog statusLog = StatusLog.readStatus();
 
-        String headCommit = statusLog.pointersMap.get("HEAD");
         System.out.println("=== Branches ===");
         for (String branch: statusLog.pointersMap.keySet()) {
             if (branch.equals("HEAD")) {
                 continue;
             }
-            if (statusLog.pointersMap.get(branch).equals(headCommit)) {
+            if (statusLog.currentBranch.equals(branch)) {
                 branch = "*" + branch;
             }
             System.out.println(branch);
@@ -284,6 +286,7 @@ public class Repository {
         Commit currentCommit = Commit.readCommit(HEADCommit);
         Map<String, String> checkoutFilesMap = checkoutCommit.getFilesMap();
         Map<String, String> currentFilesMap = currentCommit.getFilesMap();
+
         Set<String> replaceFilesSet = new TreeSet<>();
         for (String fileName : checkoutFilesMap.keySet()) {
             if (currentFilesMap.containsKey(fileName)) {
@@ -296,6 +299,7 @@ public class Repository {
                 }
             }
         }
+
         Set<String> deleteFilesSet = currentFilesMap.keySet();
         deleteFilesSet.removeAll(replaceFilesSet);
         for (String fileName : deleteFilesSet) {
@@ -304,6 +308,7 @@ public class Repository {
                 throw error("Can't delete file: " + fileName);
             }
         }
+
         Set<String> createFilesSet = checkoutFilesMap.keySet();
         createFilesSet.removeAll(replaceFilesSet);
         for (String fileName : createFilesSet) {
@@ -318,6 +323,7 @@ public class Repository {
                 throw error("Can't create file: " + fileName);
             }
         }
+
         for (String fileName : replaceFilesSet) {
             String blobName = checkoutFilesMap.get(fileName);
             File fileToCreate = join(CWD, fileName);
@@ -325,7 +331,9 @@ public class Repository {
             String content = readContentsAsString(contentSavedBlob);
             writeContents(fileToCreate, content);
         }
+
         statusLog.setPointer("HEAD", branchCommit);
+        statusLog.currentBranch = branchName;
         statusLog.resetStaged();
         // save changes
         statusLog.saveStatus();
@@ -335,10 +343,89 @@ public class Repository {
         StatusLog statusLog = StatusLog.readStatus();
 
         if (statusLog.pointersMap.containsKey(branchName)) {
-            error("A branch with that name already exists.");
+            throw error("A branch with that name already exists.");
         }
         String currentCommitName = statusLog.pointersMap.get("HEAD");
         statusLog.pointersMap.put(branchName, currentCommitName);
+
+        // save changes
+        statusLog.saveStatus();
+    }
+
+    public static void rmBranch(String branchName) {
+        StatusLog statusLog = StatusLog.readStatus();
+
+        if (!statusLog.pointersMap.containsKey(branchName)) {
+            throw error("A branch with that name does not exist.");
+        }
+        if (statusLog.currentBranch.equals(branchName)) {
+            throw error("Cannot remove the current branch.");
+        }
+        statusLog.pointersMap.remove(branchName);
+
+        // save changes
+        statusLog.saveStatus();
+    }
+
+    public static void reset(String briefCommitID) {
+        StatusLog statusLog = StatusLog.readStatus();
+
+        String commitID = findMatchedCommitID(briefCommitID);
+        String HEADCommit = statusLog.pointersMap.get("HEAD");
+        Commit checkoutCommit = Commit.readCommit(commitID);
+        Commit currentCommit = Commit.readCommit(HEADCommit);
+        Map<String, String> checkoutFilesMap = checkoutCommit.getFilesMap();
+        Map<String, String> currentFilesMap = currentCommit.getFilesMap();
+
+        Set<String> replaceFilesSet = new TreeSet<>();
+        for (String fileName : checkoutFilesMap.keySet()) {
+            if (currentFilesMap.containsKey(fileName)) {
+                replaceFilesSet.add(fileName);
+            } else {
+                File fileToCreate = join(CWD, fileName);
+                if (fileToCreate.exists()) {
+                    throw error("There is an untracked file in the way; " +
+                            "delete it, or add and commit it first.");
+                }
+            }
+        }
+
+        Set<String> deleteFilesSet = currentFilesMap.keySet();
+        deleteFilesSet.removeAll(replaceFilesSet);
+        for (String fileName : deleteFilesSet) {
+            File fileToDelete = join(CWD, fileName);
+            if (!fileToDelete.delete()) {
+                throw error("Can't delete file: " + fileName);
+            }
+        }
+
+        Set<String> createFilesSet = checkoutFilesMap.keySet();
+        createFilesSet.removeAll(replaceFilesSet);
+        for (String fileName : createFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            try {
+                fileToCreate.createNewFile();
+                String content = readContentsAsString(contentSavedBlob);
+                writeContents(fileToCreate, content);
+            } catch (IOException excp) {
+                throw error("Can't create file: " + fileName);
+            }
+        }
+
+        for (String fileName : replaceFilesSet) {
+            String blobName = checkoutFilesMap.get(fileName);
+            File fileToCreate = join(CWD, fileName);
+            File contentSavedBlob = join(Blobs, blobName);
+            String content = readContentsAsString(contentSavedBlob);
+            writeContents(fileToCreate, content);
+        }
+
+        statusLog.setPointer("HEAD", commitID);
+        String currentBranch = statusLog.currentBranch;
+        statusLog.setPointer(currentBranch, commitID);
+        statusLog.resetStaged();
 
         // save changes
         statusLog.saveStatus();
