@@ -16,17 +16,18 @@ public class MergedCommit extends Commit {
     public MergedCommit(String message, Commit firstParent, Commit secondParent) {
         // the firstParent will decide which branch the "log" command will follow.
         super(message, firstParent);
-        this.branchParent = sha1(secondParent);
+        this.branchParent = sha1((Object) serialize(secondParent));
     }
 
     @Override
     public String toString() {
         String message = "===" + "\n";
-        message += "commit " + sha1(this) + "\n";
+        message += "commit " + sha1((Object) serialize(this)) + "\n";
         message += "Merge: " + this.getParentCommit().substring(0,7) + " "
                 + this.branchParent.substring(0,7) + "\n";
         message += "Date: " + this.getDate().toString() + "\n";
         message += this.getMessage() + "\n";
+        message += "\n";
         return message;
     }
 

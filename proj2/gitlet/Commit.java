@@ -177,7 +177,6 @@ public class Commit implements Serializable {
         }
     }
 
-
     /**
      * Find which blob the file map to in this commit.
      * @param fileName specific file in this commit

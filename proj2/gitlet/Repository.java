@@ -2,10 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -428,6 +425,204 @@ public class Repository {
         statusLog.resetStaged();
 
         // save changes
+        statusLog.saveStatus();
+    }
+
+    private static Commit findLCA(Commit A, Commit B) {
+        Deque<String> AAncestors = new LinkedList<>();
+        Deque<String> BAncestors = new LinkedList<>();
+
+        while (A.getParentCommit() != null) {
+            AAncestors.push(A.getParentCommit());
+            A = Commit.readCommit(A.getParentCommit());
+        }
+        while (B.getParentCommit() != null) {
+            BAncestors.push(B.getParentCommit());
+            B = Commit.readCommit(B.getParentCommit());
+        }
+
+        String LCAName = null;
+        while (!AAncestors.isEmpty() && !BAncestors.isEmpty()) {
+            String AAncestor = AAncestors.pop();
+            String BAncestor = BAncestors.pop();
+            if (AAncestor.equals(BAncestor)) {
+                LCAName = AAncestor;
+            } else {
+                break;
+            }
+        }
+        return Commit.readCommit(LCAName);
+    }
+
+    public static void merge(String branchName) {
+        // read the saved commit and status
+        // get three needed commit nodes(head, branch, LCA)
+        StatusLog statusLog = StatusLog.readStatus();
+        if (statusLog.currentBranch.equals(branchName)) {
+            throw error("Cannot merge a branch with itself.");
+        }
+        if (!statusLog.stagedForAddition.isEmpty() || !statusLog.stagedForRemoval.isEmpty()) {
+            throw error("You have uncommitted changes.");
+        }
+        Commit currentCommit = statusLog.readCurrentCommit();
+        String branchCommitName = statusLog.pointersMap.get(branchName);
+        if (branchCommitName == null) {
+            throw error("A branch with that name does not exist.");
+        }
+        Commit branchCommit = Commit.readCommit(branchCommitName);
+        Commit LCACommit = findLCA(currentCommit, branchCommit);
+
+        // handling the edge cases
+        if (LCACommit.equals(branchCommit)) {
+            message("Given branch is an ancestor of the current branch.");
+            return;
+        }
+        if (LCACommit.equals(currentCommit)) {
+            checkoutToBranch(branchName);
+            message("Current branch fast-forwarded.");
+            return;
+        }
+
+        // get all needed fileMap
+        Map<String, String> currentFileMap = currentCommit.getFilesMap();
+        Map<String, String> branchFileMap = branchCommit.getFilesMap();
+        Map<String, String> LCAFileMap = LCACommit.getFilesMap();
+        Set<String> allFileSet = new TreeSet<>();
+        allFileSet.addAll(currentFileMap.keySet());
+        allFileSet.addAll(branchFileMap.keySet());
+        allFileSet.addAll(LCAFileMap.keySet());
+
+        // conflict flag
+        boolean conflictFlag = false;
+
+        // check the edge case when we want to create a file, but it already exists.
+        for (String fileName: allFileSet) {
+            if (!currentFileMap.containsKey(fileName) && branchFileMap.containsKey(fileName)) {
+                if (!LCAFileMap.containsKey(fileName) || !LCAFileMap.get(fileName).equals(branchFileMap.get(fileName))) {
+                    File fileToCreate = join(CWD, fileName);
+                    if (fileToCreate.exists()) {
+                        throw error("There is an untracked file in the way; " +
+                                "delete it, or add and commit it first.");
+                    }
+                }
+            }
+        }
+
+        // iterate through all file to find the correct modification
+        for (String fileName: allFileSet) {
+            String LCABlobName = LCAFileMap.get(fileName);
+            String currentBlobName = currentFileMap.get(fileName);
+            String branchBlobName = branchFileMap.get(fileName);
+            // X X A -> A: create a file and stage it for addition
+            if (LCABlobName == null && currentBlobName == null && branchBlobName != null) {
+//                File fileToCreate = join(CWD, fileName);
+//                File contentSavedBlob = join(Blobs, branchBlobName);
+//                try {
+//                    fileToCreate.createNewFile();
+//                    String content = readContentsAsString(contentSavedBlob);
+//                    writeContents(fileToCreate, content);
+//                } catch (IOException excp) {
+//                    throw error("Can't create file: " + fileName);
+//                }
+                checkout(branchCommit, fileName);
+                // stage it for addition
+                add(fileName);
+                continue;
+            }
+
+            // X A X -> A: nothing changed
+
+            // X A !A -> conflict
+            // X A A -> A: nothing changed
+            if (LCABlobName == null && currentBlobName != null && branchBlobName != null) {
+                if (!currentBlobName.equals(branchName)) {
+                    File fileToReplace = join(CWD, fileName);
+                    File currentContentSavedBlob = join(Blobs, currentBlobName);
+                    File branchContentSavedBlob = join(Blobs, branchBlobName);
+
+                    String currentContent = readContentsAsString(currentContentSavedBlob);
+                    String branchContent = readContentsAsString(branchContentSavedBlob);
+                    String content = "<<<<<<< HEAD\n" + currentContent + "=======\n" + branchContent + ">>>>>>>";
+                    writeContents(fileToReplace, content);
+
+                    add(fileName);
+                    conflictFlag = true;
+                }
+                continue;
+            }
+
+            // A A & -> &: turn file to branch's file, stage it
+            assert LCABlobName != null;
+            if (LCABlobName.equals(currentBlobName)) {
+                if (branchBlobName == null) {
+                    rm(fileName);
+                } else if (!currentBlobName.equals(branchBlobName)) {
+                    checkout(branchCommit, fileName);
+                    add(fileName);
+                }
+                continue;
+            }
+
+            // A & A -> &: Nothing changed
+
+            // A !A !A -> conflict or nothing changed
+            if (!LCABlobName.equals(currentBlobName) && !LCABlobName.equals(branchBlobName)) {
+                if (currentBlobName == null && branchBlobName != null) {
+                    File fileToReplace = join(CWD, fileName);
+                    File branchContentSavedBlob = join(Blobs, branchBlobName);
+
+                    String branchContent = readContentsAsString(branchContentSavedBlob);
+                    String content = "<<<<<<< HEAD\n" + "=======\n" + branchContent + ">>>>>>>";
+                    writeContents(fileToReplace, content);
+
+                    add(fileName);
+                    conflictFlag = true;
+                    continue;
+                }
+                if (currentBlobName != null && branchBlobName == null) {
+                    File fileToReplace = join(CWD, fileName);
+                    File currentContentSavedBlob = join(Blobs, currentBlobName);
+
+                    String currentContent = readContentsAsString(currentContentSavedBlob);
+                    String content = "<<<<<<< HEAD\n" + currentContent + "=======\n" + ">>>>>>>";
+                    writeContents(fileToReplace, content);
+
+                    add(fileName);
+                    conflictFlag = true;
+                    continue;
+                }
+                if (currentBlobName != null && !currentBlobName.equals(branchBlobName)) {
+                    File fileToReplace = join(CWD, fileName);
+                    File currentContentSavedBlob = join(Blobs, currentBlobName);
+                    File branchContentSavedBlob = join(Blobs, branchBlobName);
+
+                    String currentContent = readContentsAsString(currentContentSavedBlob);
+                    String branchContent = readContentsAsString(branchContentSavedBlob);
+                    String content = "<<<<<<< HEAD\n" + currentContent + "=======\n" + branchContent + ">>>>>>>";
+                    writeContents(fileToReplace, content);
+
+                    add(fileName);
+                    conflictFlag = true;
+                }
+            }
+        }
+        // create new merge commit
+        String message = "Merged " + branchName + " into " + statusLog.currentBranch + ".";
+        MergedCommit newCommit = new MergedCommit(message, currentCommit, branchCommit);
+
+        newCommit.putAll(statusLog.stagedForAddition);
+        newCommit.removeAll(statusLog.stagedForRemoval);
+        statusLog.resetStaged();
+        statusLog.setPointer("HEAD", sha1((Object) serialize(newCommit)));
+        String currentBranch = statusLog.currentBranch;
+        statusLog.setPointer(currentBranch, sha1((Object) serialize(newCommit)));
+
+        if (conflictFlag) {
+            message("Encountered a merge conflict.");
+        }
+
+        // save all changes
+        newCommit.saveCommit();
         statusLog.saveStatus();
     }
 
