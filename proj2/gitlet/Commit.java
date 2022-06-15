@@ -26,6 +26,7 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     private String message;
     private Date date;
+    private String formatDate;
     /** fileName -> blob */
     private Map<String, String> filesMap;
     private String parentCommit;
@@ -44,16 +45,20 @@ public class Commit implements Serializable {
      */
     public Commit(String message, Commit parentCommit) {
         this.message = message;
+        Calendar calendar = Calendar.getInstance();
         if (parentCommit == null) {
             date = new Date();
             date.setTime(0);
+            calendar.setTime(date);
             filesMap = new TreeMap<>();
             this.parentCommit = null;
         }else {
             date = new Date();
+            calendar.setTime(date);
             filesMap = parentCommit.filesMap;
             this.parentCommit = sha1(serialize(parentCommit));
         }
+        formatDate = String.format("%2$s %3$s %1$te %1$tH:%1$tM:%1$tS %1$tY %1$tz", date, calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH), calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.ENGLISH));
     }
 
     /**
@@ -121,8 +126,8 @@ public class Commit implements Serializable {
     @Override
     public String toString() {
         String message = "===" + "\n";
-        message += "commit " + sha1(serialize(this)) + "\n";
-        message += "Date: " + date.toString() + "\n";
+        message += "commit " + sha1((Object) serialize(this)) + "\n";
+        message += "Date: " + formatDate + "\n";
         message += this.message + "\n";
         message += "\n";
         return message;
@@ -137,8 +142,8 @@ public class Commit implements Serializable {
         return this.message;
     }
 
-    public Date getDate() {
-        return this.date;
+    public String getFormatDate() {
+        return this.formatDate;
     }
 
     public String getParentCommit() {

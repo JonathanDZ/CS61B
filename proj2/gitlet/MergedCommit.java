@@ -25,7 +25,7 @@ public class MergedCommit extends Commit {
         message += "commit " + sha1((Object) serialize(this)) + "\n";
         message += "Merge: " + this.getParentCommit().substring(0,7) + " "
                 + this.branchParent.substring(0,7) + "\n";
-        message += "Date: " + this.getDate().toString() + "\n";
+        message += "Date: " + this.getFormatDate() + "\n";
         message += this.getMessage() + "\n";
         message += "\n";
         return message;
