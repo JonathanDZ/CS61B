@@ -29,11 +29,18 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     /* Instance Variables */
     private Collection<Node>[] buckets;
     // You should probably define some more!
+    private int elementSize;
+    private int bucketSize;
+    private double loadFactor;
 
     /** Constructors */
-    public MyHashMap() { }
+    public MyHashMap() {
+        this(16, 0.75);
+    }
 
-    public MyHashMap(int initialSize) { }
+    public MyHashMap(int initialSize) {
+        this(initialSize, 0.75);
+    }
 
     /**
      * MyHashMap constructor that creates a backing array of initialSize.
@@ -42,7 +49,15 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param initialSize initial size of backing array
      * @param maxLoad maximum load factor
      */
-    public MyHashMap(int initialSize, double maxLoad) { }
+    public MyHashMap(int initialSize, double maxLoad) {
+        elementSize = 0;
+        bucketSize = initialSize;
+        loadFactor = maxLoad;
+        buckets = createTable(initialSize);
+        for (int i = 0; i < initialSize; i+=1) {
+            buckets[i] = createBucket();
+        }
+    }
 
     /**
      * Returns a new node to be placed in a hash table bucket
@@ -88,5 +103,49 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
+    @Override
+    public void clear() {
+        for (int i = 0; i < bucketSize; i += 1) {
+            buckets[i].clear();
+        }
+    }
+
+    /**
+     * A helper function to calculate the bucket index of the given key.
+     * @param key the input key
+     * @return the index of given key
+     */
+    public int findBucketIndex(K key) {
+        int hashcode = key.hashCode();
+        int index = hashcode % bucketSize;
+        if (index < 0) {
+            index += bucketSize;
+        }
+        return index;
+    }
+
+    public boolean containsKey(K key) {
+        int bucketIndex = findBucketIndex(key);
+        for (Node node: buckets[bucketIndex]) {
+            if (node.key.equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public V get(K key) {
+        int bucketIndex = findBucketIndex(key);
+        for (Node node: buckets[bucketIndex]) {
+            if (node.key.equals(key)) {
+                return node.value;
+            }
+        }
+        return null;
+    }
+
+    public int size() {
+        return elementSize;
+    }
 
 }
