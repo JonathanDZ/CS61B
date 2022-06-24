@@ -1,7 +1,6 @@
 package hashmap;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  *  A hash table-backed Map implementation. Provides amortized constant time
@@ -105,9 +104,17 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     // Your code won't compile until you do so!
     @Override
     public void clear() {
-        for (int i = 0; i < bucketSize; i += 1) {
-            buckets[i].clear();
+//        for (int i = 0; i < bucketSize; i += 1) {
+//            buckets[i].clear();
+//        }
+        int newBucketSize = 16;
+        Collection<Node>[] newBuckets = createTable(newBucketSize);
+        for (int i = 0; i < newBucketSize; i+=1) {
+            newBuckets[i] = createBucket();
         }
+        buckets = newBuckets;
+        elementSize = 0;
+        bucketSize = 16;
     }
 
     /**
@@ -124,6 +131,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return index;
     }
 
+    @Override
     public boolean containsKey(K key) {
         int bucketIndex = findBucketIndex(key);
         for (Node node: buckets[bucketIndex]) {
@@ -134,6 +142,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return false;
     }
 
+    @Override
     public V get(K key) {
         int bucketIndex = findBucketIndex(key);
         for (Node node: buckets[bucketIndex]) {
@@ -144,8 +153,103 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return null;
     }
 
+    @Override
     public int size() {
         return elementSize;
+    }
+
+    /**
+     * resize the buckets when elementSize/bucketSize exceed 3/4
+     */
+    public void resizeBuckets() {
+        int newBucketSize = 2 * bucketSize;
+        Collection<Node>[] newBuckets = createTable(newBucketSize);
+        for (int i = 0; i < newBucketSize; i+=1) {
+            newBuckets[i] = createBucket();
+        }
+        for (int i = 0; i < bucketSize; i += 1) {
+            for (Node node: buckets[i]) {
+                int hashcode = node.key.hashCode();
+                int newIndex = hashcode % newBucketSize;
+                if (newIndex < 0) {
+                    newIndex += newBucketSize;
+                }
+                newBuckets[newIndex].add(node);
+            }
+        }
+
+        bucketSize = newBucketSize;
+        buckets = newBuckets;
+    }
+
+    @Override
+    public void put(K key, V value) {
+        int bucketIndex = findBucketIndex(key);
+        boolean foundKey = false;
+        for (Node node: buckets[bucketIndex]) {
+            if (node.key.equals(key)) {
+                node.value = value;
+                foundKey = true;
+                break;
+            }
+        }
+        if (!foundKey) {
+            Node newNode = createNode(key, value);
+            buckets[bucketIndex].add(newNode);
+            elementSize += 1;
+            double currentLoad = (double) elementSize / bucketSize;
+            if (currentLoad > loadFactor) {
+                resizeBuckets();
+            }
+        }
+    }
+
+    @Override
+    public Set<K> keySet() {
+        Set<K> keySet = new HashSet<>();
+        for (int i = 0; i < bucketSize; i += 1) {
+            for (Node node: buckets[i]) {
+                keySet.add(node.key);
+            }
+        }
+        return keySet;
+    }
+
+    private class MyHashMapIterator implements Iterator<K> {
+        private int index;
+        private K[] keyArray;
+
+        public MyHashMapIterator() {
+            index = 0;
+            keyArray = (K[]) keySet().toArray();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < elementSize;
+        }
+
+        @Override
+        public K next() {
+            K item = keyArray[index];
+            index += 1;
+            return item;
+        }
+    }
+
+    @Override
+    public Iterator<K> iterator() {
+        return new MyHashMapIterator();
+    }
+
+    @Override
+    public V remove(K key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V remove(K key, V value) {
+        throw new UnsupportedOperationException();
     }
 
 }
